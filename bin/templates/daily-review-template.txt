@@ -4,7 +4,4 @@ Daily
 & How would you describe your productivity today? How was your attention, focus, prioritization? (optional text, 'Enter' to send)
 ! Compared to yesterday (or to the last working day), have you been more productive? ('y' or 'n', 'Enter' to send)
 & Have anything bad happened today? How have you reacted to it? (optional text, 'Enter' to send)
-# How would you rate your productivity today? (integer, 0-100)
-# How would you rate your well-being today? (integer, 0-100)
-# How would you rate your kindness today? (integer, 0-100)
 & Would you like to comment something else about the day? (optional text, 'Enter' to send)

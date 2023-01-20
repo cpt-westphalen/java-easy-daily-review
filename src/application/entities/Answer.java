@@ -2,7 +2,7 @@ package application.entities;
 
 import java.time.LocalDateTime;
 
-import application.entities.Question.Type;
+import application.entities.TemplateQuestion.Type;
 
 public class Answer {
     private Type type;

@@ -2,13 +2,9 @@ package application.entities;
 
 import java.time.LocalDateTime;
 
-public class Question {
+import application.entities.TemplateQuestion.Type;
 
-    public static enum Type {
-        TEXT,
-        NUMBER,
-        BOOLEAN
-    }
+public class Question {
 
     private String id;
     private Type type;
@@ -16,11 +12,11 @@ public class Question {
     private Answer answer;
     private LocalDateTime updatedAt;
 
-    public Question(String id, Type type, String text) {
-        this.id = id;
-        this.type = type;
-        this.text = text;
-        this.answer = new Answer(type, null);
+    public Question(TemplateQuestion templateQuestion) {
+        this.id = templateQuestion.id;
+        this.type = templateQuestion.type;
+        this.text = templateQuestion.text;
+        this.answer = new Answer(templateQuestion.type, null);
     }
 
     public String getId() {
@@ -40,22 +36,19 @@ public class Question {
         return this.text;
     }
 
-    public void setText(String text) {
-        this.text = text;
-        this.updatedAt = LocalDateTime.now();
-    }
-
     public Answer getAnswer() {
         return this.answer;
     }
 
     public void setAnswer(Answer answer) {
-        this.updatedAt = LocalDateTime.now();
-        this.answer = answer;
+        if (answer != null) {
+            this.updatedAt = LocalDateTime.now();
+            this.answer = answer;
+        }
     }
 
     public boolean isAnswered() {
-        return !(this.answer.getValue().isEmpty());
+        return !(this.answer.getValue() == null || this.answer.getValue().isEmpty());
     }
 
     public LocalDateTime getUpdatedAt() {
@@ -64,7 +57,8 @@ public class Question {
 
     @Override
     public String toString() {
-        return "Question [id=" + id + ", type=" + type + ", text=" + text + ", answer=" + answer + ", updatedAt="
-                + updatedAt + "]";
+        return "Question [\n\tid=" + id + ", \n\ttype=" + type + ", \n\ttext=" + text + ", \n\tanswer=" + answer
+                + ", \n\tupdatedAt="
+                + updatedAt + "\n]";
     }
 }

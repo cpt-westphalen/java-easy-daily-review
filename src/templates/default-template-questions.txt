@@ -1,0 +1,6 @@
+i 1236d288-9b69-458e-8474-c58fcd35ad08
+# How would you rate your well-being today? (integer, 0-100)
+i 86f8f91a-17cb-4058-9dc2-5d439b3daa58
+# How would you rate your productivity today? (integer, 0-100)
+i 36276627-b507-41ff-b9f0-8bc7c9709986
+# How would you rate your day as a whole? (integer, 0-100)

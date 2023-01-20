@@ -19,7 +19,5 @@ public class App {
 
         // // menu principal
         cli.mainMenu();
-
-        cli.registerNewReview();
     }
 }

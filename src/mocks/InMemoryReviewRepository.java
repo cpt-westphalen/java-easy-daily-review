@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import application.entities.Review;
-import application.entities.Template.Period;
+import application.entities.TemplateReview.Period;
 import application.repositories.ReviewRepository;
 
 public class InMemoryReviewRepository implements ReviewRepository {

@@ -3,7 +3,7 @@ package application.repositories;
 import java.util.List;
 
 import application.entities.Review;
-import application.entities.Template.Period;
+import application.entities.TemplateReview.Period;
 
 public interface ReviewRepository {
     public List<Review> getAll();

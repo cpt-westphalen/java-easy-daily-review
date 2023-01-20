@@ -3,13 +3,16 @@ package application.entities;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import application.entities.Template.Period;
+import application.entities.TemplateReview.Period;
 
 public class Review {
 
     private String id;
     private Period period;
-    private Integer rate;
+    private Integer dayRate;
+    private Integer wellbeingRate;
+    private Integer productivityRate;
+
     private LocalDateTime date;
     private List<Question> questions;
 
@@ -32,12 +35,28 @@ public class Review {
         this.period = period;
     }
 
-    public Integer getRate() {
-        return this.rate;
+    public Integer getDayRate() {
+        return dayRate;
     }
 
-    public void setRate(Integer rate) {
-        this.rate = rate;
+    public void setDayRate(Integer dayRate) {
+        this.dayRate = dayRate;
+    }
+
+    public Integer getWellbeingRate() {
+        return wellbeingRate;
+    }
+
+    public void setWellbeingRate(Integer wellbeingRate) {
+        this.wellbeingRate = wellbeingRate;
+    }
+
+    public Integer getProductivityRate() {
+        return productivityRate;
+    }
+
+    public void setProductivityRate(Integer productivityRate) {
+        this.productivityRate = productivityRate;
     }
 
     public LocalDateTime getDate() {
@@ -62,16 +81,11 @@ public class Review {
 
     public Question getQuestionById(String id) {
         for (Question q : this.questions) {
-            if (q.getId() == id) {
+            if (q.getId().equals(id)) {
                 return q;
             }
         }
         return null;
     }
 
-    @Override
-    public String toString() {
-        return "Review [id=" + id + ", period=" + period + ", rate=" + rate + ", date=" + date + ", questions="
-                + questions + "]";
-    }
 }

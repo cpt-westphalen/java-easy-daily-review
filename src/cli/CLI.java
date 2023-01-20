@@ -10,6 +10,8 @@ import application.Auth;
 import application.entities.Answer;
 import application.entities.Question;
 import application.entities.Review;
+import application.entities.TemplateQuestion;
+import application.entities.TemplateReview;
 import application.entities.User;
 import application.useCases.RegisterNewReview;
 
@@ -71,33 +73,42 @@ public class CLI {
 
     public void mainMenu() {
         String[] options = new String[] { "New daily review", "Check previous reviews", "Settings" };
-        Integer selectedOption = Menu.main(scan, options);
-        switch (selectedOption) {
-            case 0:
-                // new daily review use-case
-                scan.nextLine();
-                registerNewReview();
-                // check selected template
-                // make new review object
-                // display options and input answers
-                // save review to repository
-                // display success message
-                break;
+        boolean loop = true;
+        do {
 
-            default:
-                break;
-        }
+            Integer selectedOption = Menu.main(scan, options);
+            switch (selectedOption) {
+                case 0:
+                    // new daily review use-case
+                    scan.nextLine();
+                    clear();
+                    registerNewReview();
+                    break;
 
+                case 1:
+                    // check previous reviews
+
+                    break;
+
+                default:
+                    break;
+            }
+            System.out.println("Do you wish to exit Easy Daily Review? ('y' or 'n')");
+
+            if (scan.nextLine().startsWith("y")) {
+                loop = false;
+            }
+        } while (loop);
     }
 
     public void registerNewReview() {
         RegisterNewReview registerNewReview = new RegisterNewReview(CliModule.reviewRepository);
-        Review template = registerNewReview.getTemplateDailyReview();
+        TemplateReview template = registerNewReview.getTemplateReviewFrom("src/templates", "daily-review-template.txt");
         System.out.println("You are using the default daily review template.");
+        System.out.println("----- " + LocalDateTime.now().toLocalDate() + " -----");
         List<Question> questions = new LinkedList<Question>();
-        for (Question templateQuestion : template.getQuestions()) {
-            Question question = new Question(templateQuestion.getId(), templateQuestion.getType(),
-                    templateQuestion.getText());
+        for (TemplateQuestion templateQuestion : template.getTemplateQuestions()) {
+            Question question = new Question(templateQuestion);
             Answer answer = question.getAnswer();
             System.out.println(question.getText());
             String answerText = scan.nextLine();
@@ -110,9 +121,24 @@ public class CLI {
         // create the new review from the questions and answers
         Review review = new Review(UUID.randomUUID().toString(), template.getPeriod(), LocalDateTime.now(), questions);
 
-        // set overall review rate, which should always be the last question.
-        Integer rate = questions.get((questions.size() - 1)).getAnswer().getValueAsInteger();
-        review.setRate(rate);
+        // set default rates by querying the question id
+        Integer dayRate = review.getQuestionById(CliModule.templateQuestionRepository.getDayRateQuestion().getId())
+                .getAnswer().getValueAsInteger();
+        Integer wellbeingRate = review
+                .getQuestionById(CliModule.templateQuestionRepository.getWellbeingRateQuestion().getId())
+                .getAnswer().getValueAsInteger();
+        Integer productivityRate = review
+                .getQuestionById(CliModule.templateQuestionRepository.getProductivityRateQuestion().getId())
+                .getAnswer().getValueAsInteger();
+
+        review.setDayRate(dayRate);
+        review.setWellbeingRate(wellbeingRate);
+        review.setProductivityRate(productivityRate);
+
+        // // set overall review rate, which should always be the last question.
+        // Integer rate = questions.get((questions.size() -
+        // 1)).getAnswer().getValueAsInteger();
+        // review.setRate(rate);
 
         registerNewReview.saveToRepository(review);
         System.out.println("Completed! Would you like to see your answers? ('y' or 'n')");
@@ -126,14 +152,15 @@ public class CLI {
     public void printReview(Review review) {
         System.out.println("------ Review :: " + review.getDate() + " ------");
         System.out.println("Periodicity: " + review.getPeriod().name());
-        System.out.println("Overall rating: " + review.getRate());
-        System.out.println("\n");
+        System.out.println("Well-being rate: " + review.getDayRate());
+        System.out.println("Productivity rate: " + review.getDayRate());
+        System.out.println("Overall day rate: " + review.getDayRate());
         System.out.println("-- Answers --");
-        for (Question question : review.getQuestions()) {
-            System.out.println(question.getText());
-            System.out.println("R: " + question.getAnswer().getValue());
+        List<Question> questions = review.getQuestions();
+        for (int i = 0; i < questions.size(); i++) {
+            System.out.println((i + 1) + ") " + questions.get(i).getText());
+            System.out.println("R: " + questions.get(i).getAnswer().getValue());
         }
-        System.out.println("\n");
         System.out.println("------------");
     }
 }

@@ -2,6 +2,8 @@ package application.entities;
 
 import java.util.List;
 
+import application.entities.TemplateQuestion.Type;
+
 public class TemplateReview {
 
     public static enum Period {
@@ -11,7 +13,13 @@ public class TemplateReview {
         YEARLY
     };
 
-    public static String rateDayQuestionText = "How would you rate your day as a whole? (integer, 0-100)";
+    public static TemplateQuestion wellbeingRateQuestion = new TemplateQuestion("1236d288-9b69-458e-8474-c58fcd35ad08",
+            Type.NUMBER, "How would you rate your well-being today? (integer, 0-100)");
+    public static TemplateQuestion productivityRateQuestion = new TemplateQuestion(
+            "86f8f91a-17cb-4058-9dc2-5d439b3daa58", Type.NUMBER,
+            "How would you rate your productivity today? (integer, 0-100)");
+    public static TemplateQuestion dayRateQuestion = new TemplateQuestion("36276627-b507-41ff-b9f0-8bc7c9709986",
+            Type.NUMBER, "How would you rate your day as a whole? (integer, 0-100)");
 
     private String id;
     private Period period;
@@ -21,6 +29,26 @@ public class TemplateReview {
         this.id = id;
         this.period = period;
         this.templateQuestions = templateQuestions;
+
+        boolean injectDayRate = true, injectWellbeingRate = true, injectProductivityRate = true;
+
+        for (TemplateQuestion question : this.templateQuestions) {
+            if (question.getId() == productivityRateQuestion.getId()) {
+                injectProductivityRate = false;
+            }
+            if (question.getId() == wellbeingRateQuestion.getId()) {
+                injectWellbeingRate = false;
+            }
+            if (question.getId() == dayRateQuestion.getId()) {
+                injectDayRate = false;
+            }
+        }
+        if (injectProductivityRate)
+            this.templateQuestions.add(productivityRateQuestion);
+        if (injectWellbeingRate)
+            this.templateQuestions.add(wellbeingRateQuestion);
+        if (injectDayRate)
+            this.templateQuestions.add(dayRateQuestion);
     }
 
     public String getId() {
