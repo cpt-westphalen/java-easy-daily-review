@@ -7,6 +7,7 @@ import application.entities.TemplateReview.Period;
 
 public class Review {
 
+    private String authorId;
     private String id;
     private Period period;
     private Integer dayRate;
@@ -16,8 +17,9 @@ public class Review {
     private LocalDateTime date;
     private List<Question> questions;
 
-    public Review(String id, Period period, LocalDateTime date, List<Question> questions) {
-        this.id = id;
+    public Review(String authorId, String reviewId, Period period, LocalDateTime date, List<Question> questions) {
+        this.authorId = authorId;
+        this.id = reviewId;
         this.period = period;
         this.date = date;
         this.questions = questions;
@@ -25,6 +27,10 @@ public class Review {
 
     public String getId() {
         return this.id;
+    }
+
+    public String getAuthorId() {
+        return authorId;
     }
 
     public Period getPeriod() {
