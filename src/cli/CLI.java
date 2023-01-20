@@ -152,8 +152,8 @@ public class CLI {
     public void printReview(Review review) {
         System.out.println("------ Review :: " + review.getDate() + " ------");
         System.out.println("Periodicity: " + review.getPeriod().name());
-        System.out.println("Well-being rate: " + review.getDayRate());
-        System.out.println("Productivity rate: " + review.getDayRate());
+        System.out.println("Well-being rate: " + review.getWellbeingRate());
+        System.out.println("Productivity rate: " + review.getProductivityRate());
         System.out.println("Overall day rate: " + review.getDayRate());
         System.out.println("-- Answers --");
         List<Question> questions = review.getQuestions();
