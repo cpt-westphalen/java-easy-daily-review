@@ -62,47 +62,6 @@ public class RegisterNewReview {
         return template;
     }
 
-    // public TemplateReview getTemplateDailyReview() {
-    // String id;
-    // Period period = Period.DAILY;
-
-    // List<TemplateQuestion> questions = new LinkedList<TemplateQuestion>();
-
-    // String templateFolderPath = new File("src/templates")
-    // .getAbsolutePath();
-    // Path path = Path.of(templateFolderPath, "daily-review-template.txt");
-    // Scanner templateScanner = null;
-    // try {
-    // templateScanner = new Scanner(path);
-    // } catch (Exception e) {
-    // return null;
-    // }
-    // // check for id in template txt
-    // String line = templateScanner.nextLine();
-    // if (line.startsWith("i")) {
-    // id = line.substring(2);
-    // line = templateScanner.nextLine();
-    // } else {
-    // id = UUID.randomUUID().toString();
-    // }
-    // // check for periodicity
-    // if (line.equalsIgnoreCase("daily")) {
-    // period = Period.DAILY;
-    // } else if (line.equalsIgnoreCase("weekly")) {
-    // period = Period.WEEKLY;
-    // } else if (line.equalsIgnoreCase("quarterly")) {
-    // period = Period.QUARTERLY;
-    // } else if (line.equalsIgnoreCase("yearly")) {
-    // period = Period.YEARLY;
-    // }
-    // // create questions based on type / text from each line of the file
-    // questions = MakeTemplateQuestions.fromScannerNextLine(templateScanner);
-
-    // TemplateReview template = new TemplateReview(id, period, questions);
-
-    // return template;
-    // }
-
     public void saveToRepository(Review review) {
         this.reviewRepository.add(review);
     }

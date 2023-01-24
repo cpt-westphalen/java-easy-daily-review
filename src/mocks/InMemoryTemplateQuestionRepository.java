@@ -1,17 +1,12 @@
 package mocks;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.stream.Collectors;
 
 import application.entities.TemplateQuestion;
 import application.repositories.TemplateQuestionRepository;
-import utils.MakeTemplateQuestions;
 
 public class InMemoryTemplateQuestionRepository implements TemplateQuestionRepository {
 
@@ -22,31 +17,6 @@ public class InMemoryTemplateQuestionRepository implements TemplateQuestionRepos
 
     public InMemoryTemplateQuestionRepository() {
         this.templateQuestions = new HashMap<String, TemplateQuestion>();
-        List<TemplateQuestion> defaultTemplateQuestions = readTemplateQuestionsFile();
-        if (defaultTemplateQuestions != null) {
-            for (TemplateQuestion question : defaultTemplateQuestions) {
-                this.templateQuestions.put(question.getId(), question);
-            }
-        }
-    }
-
-    private List<TemplateQuestion> readTemplateQuestionsFile() {
-        List<TemplateQuestion> templateQuestionsList = new LinkedList<TemplateQuestion>();
-
-        String templateFolderPath = new File("src/templates")
-                .getAbsolutePath();
-        Path path = Path.of(templateFolderPath, "default-template-questions.txt");
-        Scanner templateScanner = null;
-        try {
-            templateScanner = new Scanner(path);
-        } catch (Exception e) {
-            return null;
-        }
-        templateQuestionsList = MakeTemplateQuestions.fromScannerNextLine(templateScanner);
-        this.productivityRateQuestion = templateQuestionsList.get(0);
-        this.wellbeingRateQuestion = templateQuestionsList.get(1);
-        this.dayRateQuestion = templateQuestionsList.get(2);
-        return templateQuestionsList;
     }
 
     @Override

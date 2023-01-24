@@ -23,12 +23,6 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public User getById(String id) {
-        // User user = null;
-        // for (User u : this.users.values()) {
-        // if (u.getId() == id) {
-        // user = u;
-        // }
-        // }
         return this.users.get(id);
     }
 

@@ -30,7 +30,8 @@ public class TemplateReview {
         this.period = period;
         this.templateQuestions = templateQuestions;
 
-        boolean injectDayRate = true, injectWellbeingRate = true, injectProductivityRate = true;
+        boolean injectDayRate = true, injectWellbeingRate = true,
+                injectProductivityRate = true;
 
         for (TemplateQuestion question : this.templateQuestions) {
             if (question.getId() == productivityRateQuestion.getId()) {
