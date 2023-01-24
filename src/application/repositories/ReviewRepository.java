@@ -10,6 +10,8 @@ public interface ReviewRepository {
 
     public Review getById(String id);
 
+    public List<Review> getManyByAuthorId(String authorId);
+
     public List<Review> getManyByPeriod(Period period);
 
     public void add(Review review);

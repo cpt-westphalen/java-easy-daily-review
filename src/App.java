@@ -1,6 +1,7 @@
 
 import java.util.Scanner;
 
+import application.Auth;
 import cli.CLI;
 
 public class App {
@@ -9,15 +10,15 @@ public class App {
     public static CLI cli = new CLI(scanner);
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Programa iniciado.");
+        cli.clear();
+        System.out.println("//----- Easy Daily Review ----- author: @cpt-westphalen -----//");
 
-        // // // registrar usuário
-        // cli.registerUser();
+        while (!Auth.isAuthorized()) {
+            cli.authMenu();
+            while (Auth.isAuthorized()) {
+                cli.mainMenu();
+            }
+        }
 
-        // // // login
-        // cli.userLogin();
-
-        // // menu principal
-        cli.mainMenu();
     }
 }

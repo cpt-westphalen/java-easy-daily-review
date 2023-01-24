@@ -2,6 +2,7 @@ package application.useCases;
 
 import java.util.List;
 
+import application.Auth;
 import application.entities.Review;
 import application.repositories.ReviewRepository;
 
@@ -12,7 +13,8 @@ public class GetReviews {
         this.reviewRepository = reviewRepository;
     }
 
-    public List<Review> all() {
-
+    public List<Review> listAllFromLoggedUser() throws Exception {
+        String authorId = Auth.getLoggedUser().getId();
+        return reviewRepository.getManyByAuthorId(authorId);
     }
 }

@@ -44,4 +44,11 @@ public class InMemoryReviewRepository implements ReviewRepository {
         this.reviews.remove(id);
     }
 
+    @Override
+    public List<Review> getManyByAuthorId(String authorId) {
+        List<Review> reviewList = reviews.values().stream().filter(review -> review.getAuthorId().equals(authorId))
+                .collect(Collectors.toList());
+        return reviewList;
+    }
+
 }

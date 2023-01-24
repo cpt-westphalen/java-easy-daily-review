@@ -1,5 +1,6 @@
 package cli;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +14,7 @@ import application.entities.Review;
 import application.entities.TemplateQuestion;
 import application.entities.TemplateReview;
 import application.entities.User;
+import application.useCases.GetReviews;
 import application.useCases.RegisterNewReview;
 
 public class CLI {
@@ -28,27 +30,45 @@ public class CLI {
         System.out.flush();
     }
 
-    public void userLogin() throws Exception {
-        String name;
-        String pin;
-        System.out.println("Please, login.");
-        System.out.println("Name: ");
-        name = this.scan.nextLine();
-        System.out.println("Pin: ");
-        pin = this.scan.nextLine();
-        this.clear();
-        User user = CliModule.userRepository.findByName(name);
-        if (user == null) {
-            throw new Exception("User not found.");
+    public void authMenu() {
+        Integer option = Menu.showOptions(scan, new String[] { "Register new user", "Login" });
+        switch (option) {
+            case 0:
+                scan.nextLine();
+                this.registerUser();
+                break;
+            case 1:
+                scan.nextLine();
+                this.loginUser();
+                break;
         }
-        if (!Auth.login(user, Integer.valueOf(pin))) {
-            throw new Exception("Incorrect Pin.");
-        }
+    }
 
+    private void loginUser() {
+        while (!Auth.isAuthorized()) {
+            this.clear();
+            String name, pin;
+            System.out.println("Please, login.");
+            System.out.println("Name: ");
+            name = this.scan.nextLine();
+            System.out.println("Pin: ");
+            pin = this.scan.nextLine();
+            this.clear();
+            User user = CliModule.userRepository.findByName(name);
+            if (user == null) {
+                System.out.println("*Error: User not found*");
+                this.authMenu();
+            }
+            if (!Auth.login(user, Integer.valueOf(pin))) {
+                System.out.println("*Error: Incorrect Pin*");
+                this.authMenu();
+            }
+        }
         System.out.println("Login was successfull!");
     }
 
-    public void registerUser() throws Exception {
+    private void registerUser() {
+        this.clear();
         System.out.println("Please, sign up: ");
         String login, pin;
 
@@ -73,10 +93,14 @@ public class CLI {
 
     public void mainMenu() {
         String[] options = new String[] { "New daily review", "Check previous reviews", "Settings" };
-        boolean loop = true;
-        do {
+        while (true) {
+            this.clear();
+            LocalDate today = LocalDate.now();
+            String name = Auth.getLoggedUser().getName();
+            System.out.println("------------- " + today + " :: " + name);
 
-            Integer selectedOption = Menu.main(scan, options);
+            Integer selectedOption = Menu.showOptions(scan, options);
+
             switch (selectedOption) {
                 case 0:
                     // new daily review use-case
@@ -87,7 +111,9 @@ public class CLI {
 
                 case 1:
                     // check previous reviews
-
+                    scan.nextLine();
+                    clear();
+                    getPreviousReviews();
                     break;
 
                 default:
@@ -96,12 +122,13 @@ public class CLI {
             System.out.println("Do you wish to exit Easy Daily Review? ('y' or 'n')");
 
             if (scan.nextLine().startsWith("y")) {
-                loop = false;
+                break;
             }
-        } while (loop);
+        }
     }
 
     public void registerNewReview() {
+        this.clear();
         RegisterNewReview registerNewReview = new RegisterNewReview(CliModule.reviewRepository);
         TemplateReview template = registerNewReview.getTemplateReviewFrom("src/templates", "daily-review-template.txt");
         System.out.println("You are using the default daily review template.");
@@ -119,7 +146,8 @@ public class CLI {
             questions.add(question);
         }
         // create the new review from the questions and answers
-        Review review = new Review(UUID.randomUUID().toString(), template.getPeriod(), LocalDateTime.now(), questions);
+        Review review = new Review(Auth.getLoggedUser().getId(), UUID.randomUUID().toString(), template.getPeriod(),
+                LocalDateTime.now(), questions);
 
         // set default rates by querying the question id
         Integer dayRate = review.getQuestionById(CliModule.templateQuestionRepository.getDayRateQuestion().getId())
@@ -135,11 +163,6 @@ public class CLI {
         review.setWellbeingRate(wellbeingRate);
         review.setProductivityRate(productivityRate);
 
-        // // set overall review rate, which should always be the last question.
-        // Integer rate = questions.get((questions.size() -
-        // 1)).getAnswer().getValueAsInteger();
-        // review.setRate(rate);
-
         registerNewReview.saveToRepository(review);
         System.out.println("Completed! Would you like to see your answers? ('y' or 'n')");
         if (scan.nextLine().charAt(0) == 'n') {
@@ -147,6 +170,41 @@ public class CLI {
         }
         printReview(review);
 
+    }
+
+    public void getPreviousReviews() {
+        this.clear();
+        GetReviews getReviews = new GetReviews(CliModule.reviewRepository);
+        List<Review> userReviews;
+        System.out.println("----- User Reviews -----");
+
+        try {
+            userReviews = getReviews.listAllFromLoggedUser();
+
+            if (userReviews.size() == 0) {
+                System.out.println("* No Reviews Yet! *");
+                System.out.println("(Press 'Enter' to return)");
+                scan.nextLine();
+                return;
+            }
+            for (int i = 0; i < userReviews.size(); i++) {
+                Review review = userReviews.get(i);
+                System.out.println(
+                        "(" + (i + 1) + ") " + review.getDate().toLocalDate() + " - Day rating: "
+                                + review.getDayRate());
+            }
+
+            System.out.println("Enter the number to display the review, or 'q' to return");
+            Integer option = scan.nextInt();
+            scan.nextLine();
+            Review selectedReview = userReviews.get(option - 1);
+            System.out.println("--- Selected review: " + selectedReview.getDate().toLocalDate() + " ---");
+            printReview(selectedReview);
+
+        } catch (Exception e) {
+            System.out.println("You need to login first.");
+            return;
+        }
     }
 
     public void printReview(Review review) {
