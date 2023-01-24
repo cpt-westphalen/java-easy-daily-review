@@ -28,12 +28,32 @@ public class Answer {
     }
 
     public Integer getValueAsInteger() {
-        return Integer.valueOf(this.value);
+        try {
+            return Integer.valueOf(this.value);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public void setValue(String value) {
         this.updatedAt = LocalDateTime.now();
-        this.value = value;
+        if (value == null || value.isBlank() || value.isEmpty()) {
+            this.value = null;
+            return;
+        }
+        if (this.type.equals(Type.BOOLEAN)) {
+            this.value = value.toLowerCase().startsWith("y") ? "Yes" : "No";
+            return;
+        }
+        if (this.type.equals(Type.NUMBER)) {
+            try {
+                Integer.parseInt(value);
+            } catch (Exception e) {
+                this.value = null;
+                return;
+            }
+        }
+        this.value = value.trim();
     }
 
     public LocalDateTime getUpdatedAt() {

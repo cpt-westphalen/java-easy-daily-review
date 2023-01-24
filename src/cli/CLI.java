@@ -14,6 +14,7 @@ import application.entities.Review;
 import application.entities.TemplateQuestion;
 import application.entities.TemplateReview;
 import application.entities.User;
+import application.entities.TemplateQuestion.Type;
 import application.useCases.GetReviews;
 import application.useCases.RegisterNewReview;
 
@@ -57,11 +58,15 @@ public class CLI {
             User user = CliModule.userRepository.findByName(name);
             if (user == null) {
                 System.out.println("*Error: User not found*");
+                System.out.println();
                 this.authMenu();
+                return;
             }
             if (!Auth.login(user, Integer.valueOf(pin))) {
                 System.out.println("*Error: Incorrect Pin*");
+                System.out.println();
                 this.authMenu();
+                return;
             }
         }
         System.out.println("Login was successfull!");
@@ -70,10 +75,13 @@ public class CLI {
     private void registerUser() {
         this.clear();
         System.out.println("Please, sign up: ");
+        System.out.println("--");
+        System.out.println();
         String login, pin;
 
         System.out.println("Name: ");
         login = this.scan.nextLine();
+        System.out.println();
         System.out.println("Pin (numbers only): ");
         pin = this.scan.nextLine();
 
@@ -89,6 +97,7 @@ public class CLI {
         for (User u : users) {
             System.out.println("- " + u.getName());
         }
+        System.out.println();
     }
 
     public void mainMenu() {
@@ -133,12 +142,24 @@ public class CLI {
         TemplateReview template = registerNewReview.getTemplateReviewFrom("src/templates", "daily-review-template.txt");
         System.out.println("You are using the default daily review template.");
         System.out.println("----- " + LocalDateTime.now().toLocalDate() + " -----");
+        System.out.println();
         List<Question> questions = new LinkedList<Question>();
         for (TemplateQuestion templateQuestion : template.getTemplateQuestions()) {
             Question question = new Question(templateQuestion);
             Answer answer = question.getAnswer();
             System.out.println(question.getText());
+            if (question.getType().equals(Type.BOOLEAN)) {
+                System.out.println("(Type 'y' or 'n', 'Enter' to submit)");
+            }
+            if (question.getType().equals(Type.NUMBER)) {
+                System.out.println("(Type an integer between 0 and 100, 'Enter' to submit)");
+            }
+            if (question.getType().equals(Type.TEXT)) {
+                System.out.println("(Type any text or leave it blank, 'Enter' to submit)");
+            }
             String answerText = scan.nextLine();
+            System.out.println();
+            System.out.println("--");
             if (!answerText.isEmpty()) {
                 answer.setValue(answerText);
                 question.setAnswer(answer);
@@ -173,9 +194,10 @@ public class CLI {
     }
 
     public void getPreviousReviews() {
-        this.clear();
         GetReviews getReviews = new GetReviews(CliModule.reviewRepository);
         List<Review> userReviews;
+        System.out.println();
+        this.clear();
         System.out.println("----- User Reviews -----");
 
         try {
@@ -208,17 +230,21 @@ public class CLI {
     }
 
     public void printReview(Review review) {
+        clear();
         System.out.println("------ Review :: " + review.getDate() + " ------");
+        System.out.println();
         System.out.println("Periodicity: " + review.getPeriod().name());
         System.out.println("Well-being rate: " + review.getWellbeingRate());
         System.out.println("Productivity rate: " + review.getProductivityRate());
         System.out.println("Overall day rate: " + review.getDayRate());
-        System.out.println("-- Answers --");
+        System.out.println("\n-- Answers --\n");
         List<Question> questions = review.getQuestions();
         for (int i = 0; i < questions.size(); i++) {
+            System.out.println();
             System.out.println((i + 1) + ") " + questions.get(i).getText());
-            System.out.println("R: " + questions.get(i).getAnswer().getValue());
+            String answer = questions.get(i).getAnswer().getValue();
+            System.out.println(answer != null ? ("\tR: " + answer) : "\t* No answer provided *");
         }
-        System.out.println("------------");
+        System.out.println("\n------------\n");
     }
 }

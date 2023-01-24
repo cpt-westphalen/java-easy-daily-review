@@ -12,6 +12,7 @@ public class App {
     public static void main(String[] args) throws Exception {
         cli.clear();
         System.out.println("//----- Easy Daily Review ----- author: @cpt-westphalen -----//");
+        System.out.println();
 
         while (!Auth.isAuthorized()) {
             cli.authMenu();
