@@ -27,4 +27,8 @@ public class User {
         return this.pin.intValue() == pin.intValue();
     }
 
+    public Integer getPin() {
+        return this.pin;
+    }
+
 }

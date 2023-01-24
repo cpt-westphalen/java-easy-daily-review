@@ -1,8 +1,10 @@
 package mocks;
 
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +17,8 @@ import config.Config;
 
 public class InMemoryUserRepository implements UserRepository {
     public Map<String, User> users;
+
+    private Path USER_DB_PATH = Path.of(Config.MOCK_DB_PATH, "users.txt");
 
     public InMemoryUserRepository() {
         this.users = new HashMap<String, User>();
@@ -30,7 +34,7 @@ public class InMemoryUserRepository implements UserRepository {
     private List<User> readUsersFile() {
         List<User> usersDbList = new LinkedList<User>();
         try (BufferedReader userDbMock = new BufferedReader(
-                new FileReader(new File(Config.MOCK_DB_PATH, "users.txt")))) {
+                new FileReader(USER_DB_PATH.toFile()))) {
             String line;
             while ((line = userDbMock.readLine()) != null) {
                 if (!line.isEmpty()) {
@@ -77,6 +81,12 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public void add(User user) {
         this.users.put(user.getId(), user);
+        try (BufferedWriter userFileWriter = new BufferedWriter(new FileWriter(USER_DB_PATH.toFile(), true))) {
+            userFileWriter.newLine();
+            userFileWriter.write(user.getId() + ":" + user.getName() + ":" + user.getPin());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
