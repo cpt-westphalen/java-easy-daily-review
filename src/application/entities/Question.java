@@ -12,10 +12,11 @@ public class Question {
     private Answer answer;
     private LocalDateTime updatedAt;
 
-    public Question(TemplateQuestion templateQuestion) {
+    public Question(TemplateQuestion templateQuestion, LocalDateTime updatedAt) {
         this.id = templateQuestion.id;
         this.type = templateQuestion.type;
         this.text = templateQuestion.text;
+        this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
         this.answer = new Answer(templateQuestion.type, null);
     }
 

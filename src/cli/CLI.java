@@ -145,7 +145,7 @@ public class CLI {
         System.out.println();
         List<Question> questions = new LinkedList<Question>();
         for (TemplateQuestion templateQuestion : template.getTemplateQuestions()) {
-            Question question = new Question(templateQuestion);
+            Question question = new Question(templateQuestion, null);
             Answer answer = question.getAnswer();
             System.out.println(question.getText());
             if (question.getType().equals(Type.BOOLEAN)) {
