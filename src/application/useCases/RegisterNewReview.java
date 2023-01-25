@@ -49,10 +49,6 @@ public class RegisterNewReview {
             period = Period.DAILY;
         } else if (line.equalsIgnoreCase("weekly")) {
             period = Period.WEEKLY;
-        } else if (line.equalsIgnoreCase("quarterly")) {
-            period = Period.QUARTERLY;
-        } else if (line.equalsIgnoreCase("yearly")) {
-            period = Period.YEARLY;
         }
         // create questions based on type / text from each line of the file
         questions = MakeTemplateQuestions.fromScannerNextLine(templateScanner);

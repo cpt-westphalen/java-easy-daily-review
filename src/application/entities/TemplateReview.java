@@ -9,9 +9,6 @@ public class TemplateReview {
     public static enum Period {
         DAILY,
         WEEKLY,
-        QUARTERLY,
-        SEMIYEARLY,
-        YEARLY
     };
 
     public static TemplateQuestion wellbeingRateQuestion = new TemplateQuestion("1236d288-9b69-458e-8474-c58fcd35ad08",
