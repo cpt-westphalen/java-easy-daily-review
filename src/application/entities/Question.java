@@ -12,12 +12,12 @@ public class Question {
     private Answer answer;
     private LocalDateTime updatedAt;
 
-    public Question(TemplateQuestion templateQuestion, LocalDateTime updatedAt) {
+    public Question(TemplateQuestion templateQuestion, Answer answer, LocalDateTime updatedAt) {
         this.id = templateQuestion.id;
         this.type = templateQuestion.type;
         this.text = templateQuestion.text;
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
-        this.answer = new Answer(templateQuestion.type, null);
+        this.answer = answer != null ? answer : new Answer(templateQuestion.type, null);
     }
 
     public String getId() {
@@ -54,6 +54,10 @@ public class Question {
 
     public LocalDateTime getUpdatedAt() {
         return this.updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime date) {
+        this.updatedAt = date;
     }
 
     @Override

@@ -11,7 +11,7 @@ public class Answer {
 
     public Answer(Type type, String value) {
         this.type = type;
-        this.value = null;
+        this.value = value;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -58,5 +58,9 @@ public class Answer {
 
     public LocalDateTime getUpdatedAt() {
         return this.updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime date) {
+        this.updatedAt = date;
     }
 }

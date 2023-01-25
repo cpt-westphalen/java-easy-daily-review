@@ -20,7 +20,6 @@ public class App {
             }
         }
 
-        // TODO Text file DB for written reviews.
         // TODO Review searching
         // TODO Create own template review
 

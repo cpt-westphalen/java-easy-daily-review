@@ -1,4 +1,4 @@
 bin
 .vscode
 cli-logs*
-database/*
+*database*
