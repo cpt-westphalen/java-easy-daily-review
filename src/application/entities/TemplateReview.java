@@ -10,6 +10,7 @@ public class TemplateReview {
         DAILY,
         WEEKLY,
         QUARTERLY,
+        SEMIYEARLY,
         YEARLY
     };
 
