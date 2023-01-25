@@ -1,6 +1,6 @@
 package application.entities;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import application.entities.TemplateReview.Period;
@@ -14,10 +14,10 @@ public class Review {
     private Integer wellbeingRate;
     private Integer productivityRate;
 
-    private LocalDateTime date;
+    private LocalDate date;
     private List<Question> questions;
 
-    public Review(String authorId, String reviewId, Period period, LocalDateTime date, List<Question> questions) {
+    public Review(String authorId, String reviewId, Period period, LocalDate date, List<Question> questions) {
         this.authorId = authorId;
         this.id = reviewId;
         this.period = period;
@@ -65,7 +65,7 @@ public class Review {
         this.productivityRate = productivityRate;
     }
 
-    public LocalDateTime getDate() {
+    public LocalDate getDate() {
         return this.date;
     }
 

@@ -20,8 +20,8 @@ public class App {
             }
         }
 
-        // TODO Review searching
         // TODO Create own template review
+        // TODO If there is a review for today, display text "Overwrite today's review"
 
     }
 }

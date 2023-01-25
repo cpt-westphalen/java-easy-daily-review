@@ -1,11 +1,12 @@
 package cli;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import application.Auth;
 import application.entities.Answer;
@@ -32,14 +33,14 @@ public class CLI {
     }
 
     public void authMenu() {
-        Integer option = Menu.showOptions(scan, new String[] { "Register new user", "Login" });
+        Integer option = Menu.showOptions(this.scan, new String[] { "Register new user", "Login" });
         switch (option) {
             case 0:
-                scan.nextLine();
+                this.scan.nextLine();
                 this.registerUser();
                 break;
             case 1:
-                scan.nextLine();
+                this.scan.nextLine();
                 this.loginUser();
                 break;
         }
@@ -108,21 +109,21 @@ public class CLI {
             String name = Auth.getLoggedUser().getName();
             System.out.println("------------- " + today + " :: " + name);
 
-            Integer selectedOption = Menu.showOptions(scan, options);
+            Integer selectedOption = Menu.showOptions(this.scan, options);
 
             switch (selectedOption) {
                 case 0:
                     // new daily review use-case
-                    scan.nextLine();
-                    clear();
-                    registerNewReview();
+                    this.scan.nextLine();
+                    this.clear();
+                    this.registerNewReview();
                     break;
 
                 case 1:
                     // check previous reviews
-                    scan.nextLine();
-                    clear();
-                    getPreviousReviews();
+                    this.scan.nextLine();
+                    this.clear();
+                    this.previousReviewsMenu();
                     break;
 
                 default:
@@ -130,18 +131,18 @@ public class CLI {
             }
             System.out.println("Do you wish to exit Easy Daily Review? ('y' or 'n')");
 
-            if (scan.nextLine().startsWith("y")) {
+            if (this.scan.nextLine().startsWith("y")) {
                 break;
             }
         }
     }
 
-    public void registerNewReview() {
+    private void registerNewReview() {
         this.clear();
         RegisterNewReview registerNewReview = new RegisterNewReview(CliModule.reviewRepository);
         TemplateReview template = registerNewReview.getTemplateReviewFrom("src/templates", "daily-review-template.txt");
         System.out.println("You are using the default daily review template.");
-        System.out.println("----- " + LocalDateTime.now().toLocalDate() + " -----");
+        System.out.println("----- " + LocalDate.now() + " -----");
         System.out.println();
         List<Question> questions = new LinkedList<Question>();
         for (TemplateQuestion templateQuestion : template.getTemplateQuestions()) {
@@ -157,7 +158,7 @@ public class CLI {
             if (question.getType().equals(Type.TEXT)) {
                 System.out.println("(Type any text or leave it blank, 'Enter' to submit)");
             }
-            String answerText = scan.nextLine();
+            String answerText = this.scan.nextLine();
             System.out.println();
             System.out.println("--");
             if (!answerText.isEmpty()) {
@@ -168,7 +169,7 @@ public class CLI {
         }
         // create the new review from the questions and answers
         Review review = new Review(Auth.getLoggedUser().getId(), UUID.randomUUID().toString(), template.getPeriod(),
-                LocalDateTime.now(), questions);
+                LocalDate.now(), questions);
 
         // set default rates by querying the question id
         Integer dayRate = review.getQuestionById(
@@ -189,17 +190,39 @@ public class CLI {
 
         registerNewReview.saveToRepository(review);
         System.out.println("Completed! Would you like to see your answers? ('y' or 'n')");
-        if (scan.nextLine().charAt(0) == 'n') {
+        if (this.scan.nextLine().charAt(0) == 'n') {
             return;
         }
-        printReview(review);
+        this.printReview(review);
 
     }
 
-    public void getPreviousReviews() {
+    public void previousReviewsMenu() {
+        this.clear();
+        System.out.println("----- User Reviews -----");
+        Integer option = Menu.showOptions(this.scan,
+                new String[] { "Display recent reviews", "Search review by date", "Go back" });
+        switch (option) {
+            case 0:
+                scan.nextLine();
+                this.displayRecentReviews();
+                break;
+            case 1:
+                scan.nextLine();
+                this.searchReviewByDate();
+                break;
+
+            case 2:
+                return;
+
+            default:
+                break;
+        }
+    }
+
+    private void displayRecentReviews() {
         GetReviews getReviews = new GetReviews(CliModule.reviewRepository);
         List<Review> userReviews;
-        System.out.println();
         this.clear();
         System.out.println("----- User Reviews -----");
 
@@ -209,22 +232,43 @@ public class CLI {
             if (userReviews.size() == 0) {
                 System.out.println("* No Reviews Yet! *");
                 System.out.println("(Press 'Enter' to return)");
-                scan.nextLine();
+                this.scan.nextLine();
                 return;
             }
-            for (int i = 0; i < userReviews.size(); i++) {
-                Review review = userReviews.get(i);
-                System.out.println(
-                        "(" + (i + 1) + ") " + review.getDate().toLocalDate() + " - Day rating: "
-                                + review.getDayRate());
+            int displayNumber = 0;
+            if (userReviews.size() < 10) {
+                for (int i = userReviews.size() - 1; i >= 0; i--) {
+                    displayNumber++;
+                    Review review = userReviews.get(i);
+                    System.out.println(
+                            "(" + (displayNumber) + ") " + review.getDate() + " - Day rating: "
+                                    + review.getDayRate());
+                }
+            } else {
+                for (int i = userReviews.size() - 1; i >= userReviews.size() - 11; i--) {
+                    displayNumber++;
+                    Review review = userReviews.get(i);
+                    System.out.println(
+                            "(" + (displayNumber) + ") " + review.getDate() + " - Day rating: "
+                                    + review.getDayRate());
+                }
             }
 
-            System.out.println("Enter the number to display the review, or 'q' to return");
-            Integer option = scan.nextInt();
-            scan.nextLine();
-            Review selectedReview = userReviews.get(option - 1);
-            System.out.println("--- Selected review: " + selectedReview.getDate().toLocalDate() + " ---");
-            printReview(selectedReview);
+            while (true) {
+                System.out.println("Enter the number to display the review, or 'q' to return");
+                try {
+                    Integer option = this.scan.nextInt();
+                    this.scan.nextLine();
+                    if (option > 0 && option <= displayNumber) {
+                        Review selectedReview = userReviews.get(userReviews.size() - option);
+                        this.printReview(selectedReview);
+                        return;
+                    }
+                    System.out.println("* Enter a valid option *");
+                } catch (Exception e) {
+                    return;
+                }
+            }
 
         } catch (Exception e) {
             System.out.println("You need to login first.");
@@ -232,8 +276,64 @@ public class CLI {
         }
     }
 
+    private void searchReviewByDate() {
+        GetReviews getReviews = new GetReviews(CliModule.reviewRepository);
+
+        while (true) {
+
+            List<Review> userReviews;
+            this.clear();
+            System.out.println("----- Search Review -----");
+            try {
+                userReviews = getReviews.listAllFromLoggedUser();
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                return;
+            }
+            if (userReviews.size() == 0) {
+                System.out.println("* No Reviews Yet! *");
+                System.out.println("(Press 'Enter' to return)");
+                this.scan.nextLine();
+                return;
+            }
+            System.out.println("Type a date (Format: yyyy-mm-dd):");
+            String dateString = this.scan.nextLine().trim();
+            LocalDate date;
+            try {
+                date = LocalDate.parse(dateString);
+            } catch (Exception e) {
+                System.out.println("* Invalid Date, press 'Enter' to return *");
+                scan.nextLine();
+                return;
+            }
+            List<Review> reviewsWithDate = userReviews.stream().filter(review -> review.getDate().equals(date))
+                    .collect(Collectors.toList());
+            if (reviewsWithDate.size() == 0) {
+                System.out.println("* No Reviews Found! *");
+                System.out.println("(Press 'Enter' to return)");
+                scan.nextLine();
+                return;
+            } else {
+                List<String> menu = new ArrayList<String>();
+                for (Review review : reviewsWithDate) {
+                    menu.add(review.getDate() + " - Day rate: " + review.getDayRate());
+                }
+                Integer option = Menu.showOptions(scan, menu.toArray(new String[menu.size()]));
+                Review selectedReview = reviewsWithDate.get(option);
+                printReview(selectedReview);
+                scan.nextLine();
+                System.out.println("Would you like to search again?");
+                System.out.println("(Type 'y' or 'n')");
+                if (scan.nextLine().equals("n")) {
+                    return;
+                }
+
+            }
+        }
+    }
+
     public void printReview(Review review) {
-        clear();
+        this.clear();
         System.out.println("------ Review :: " + review.getDate() + " ------");
         System.out.println();
         System.out.println("Periodicity: " + review.getPeriod().name());

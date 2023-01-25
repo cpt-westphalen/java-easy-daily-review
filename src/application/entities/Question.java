@@ -1,6 +1,6 @@
 package application.entities;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import application.entities.TemplateQuestion.Type;
 
@@ -10,13 +10,13 @@ public class Question {
     private Type type;
     private String text;
     private Answer answer;
-    private LocalDateTime updatedAt;
+    private LocalDate updatedAt;
 
-    public Question(TemplateQuestion templateQuestion, Answer answer, LocalDateTime updatedAt) {
+    public Question(TemplateQuestion templateQuestion, Answer answer, LocalDate updatedAt) {
         this.id = templateQuestion.id;
         this.type = templateQuestion.type;
         this.text = templateQuestion.text;
-        this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
+        this.updatedAt = updatedAt != null ? updatedAt : LocalDate.now();
         this.answer = answer != null ? answer : new Answer(templateQuestion.type, null);
     }
 
@@ -43,7 +43,7 @@ public class Question {
 
     public void setAnswer(Answer answer) {
         if (answer != null) {
-            this.updatedAt = LocalDateTime.now();
+            this.updatedAt = LocalDate.now();
             this.answer = answer;
         }
     }
@@ -52,11 +52,11 @@ public class Question {
         return !(this.answer.getValue() == null || this.answer.getValue().isEmpty());
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public LocalDate getUpdatedAt() {
         return this.updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime date) {
+    public void setUpdatedAt(LocalDate date) {
         this.updatedAt = date;
     }
 

@@ -7,7 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -32,7 +32,6 @@ public class InMemoryReviewRepository implements ReviewRepository {
     private Path REVIEW_DB_PATH = Path.of(Config.MOCK_DB_PATH, "reviews");
 
     public InMemoryReviewRepository() {
-        System.out.println("In memory review repo created");
         this.reviews = new HashMap<String, Review>();
         List<Review> dbReviews = readReviewsFromFiles(REVIEW_DB_PATH);
         if (dbReviews != null) {
@@ -49,7 +48,6 @@ public class InMemoryReviewRepository implements ReviewRepository {
             Iterator<Path> foldersIterator = folders.iterator();
             while (foldersIterator.hasNext()) {
                 Path folder = foldersIterator.next();
-                System.out.println(folder.toString());
                 try (Stream<Path> files = Files.list(folder)) {
 
                     Iterator<Path> filesIterator = files.iterator();
@@ -76,7 +74,7 @@ public class InMemoryReviewRepository implements ReviewRepository {
             String line;
             String authorId = null, reviewId = null;
             Period period = null;
-            LocalDateTime date = null;
+            LocalDate date = null;
             List<Question> questions = new LinkedList<Question>();
             while ((line = reader.readLine()) != null) {
                 if (!line.startsWith("questions") && !line.startsWith("-")) {
@@ -96,14 +94,14 @@ public class InMemoryReviewRepository implements ReviewRepository {
                                 period = Period.WEEKLY;
                             break;
                         case "date":
-                            date = LocalDateTime.parse(value);
+                            date = LocalDate.parse(value);
                             break;
                     }
                 }
                 if (line.startsWith("questions")) {
                     String id = null, text = null, answerText = null;
                     Type type = null;
-                    LocalDateTime updatedAt = null;
+                    LocalDate updatedAt = null;
                     while ((line = reader.readLine()) != null) {
                         if (!line.startsWith("-")) {
 
@@ -129,7 +127,7 @@ public class InMemoryReviewRepository implements ReviewRepository {
                                     answerText = value;
                                     break;
                                 case "updated at":
-                                    updatedAt = LocalDateTime.parse(value);
+                                    updatedAt = LocalDate.parse(value);
                                     break;
                                 default:
                                     break;
@@ -203,7 +201,7 @@ public class InMemoryReviewRepository implements ReviewRepository {
         }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(
                 (new File(userFolder.toString(),
-                        review.getDate().toLocalDate().toString() + ".txt"))))) {
+                        review.getDate().toString() + ".txt"))))) {
             writer.write("authorId: " + review.getAuthorId());
             writer.newLine();
             writer.write("reviewId: " + review.getId());
