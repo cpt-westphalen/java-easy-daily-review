@@ -10,12 +10,6 @@ public interface TemplateQuestionRepository {
 
     public TemplateQuestion findById(String id);
 
-    public TemplateQuestion getDayRateQuestion();
-
-    public TemplateQuestion getWellbeingRateQuestion();
-
-    public TemplateQuestion getProductivityRateQuestion();
-
     public boolean update(String id, TemplateQuestion newTemplateQuestion);
 
     public void add(TemplateQuestion templateQuestion);

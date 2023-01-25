@@ -171,13 +171,16 @@ public class CLI {
                 LocalDateTime.now(), questions);
 
         // set default rates by querying the question id
-        Integer dayRate = review.getQuestionById(CliModule.templateQuestionRepository.getDayRateQuestion().getId())
+        Integer dayRate = review.getQuestionById(
+                "36276627-b507-41ff-b9f0-8bc7c9709986")
                 .getAnswer().getValueAsInteger();
         Integer wellbeingRate = review
-                .getQuestionById(CliModule.templateQuestionRepository.getWellbeingRateQuestion().getId())
+                .getQuestionById(
+                        "1236d288-9b69-458e-8474-c58fcd35ad08")
                 .getAnswer().getValueAsInteger();
         Integer productivityRate = review
-                .getQuestionById(CliModule.templateQuestionRepository.getProductivityRateQuestion().getId())
+                .getQuestionById(
+                        "86f8f91a-17cb-4058-9dc2-5d439b3daa58")
                 .getAnswer().getValueAsInteger();
 
         review.setDayRate(dayRate);

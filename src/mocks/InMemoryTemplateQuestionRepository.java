@@ -11,9 +11,6 @@ import application.repositories.TemplateQuestionRepository;
 public class InMemoryTemplateQuestionRepository implements TemplateQuestionRepository {
 
     private Map<String, TemplateQuestion> templateQuestions;
-    private TemplateQuestion productivityRateQuestion;
-    private TemplateQuestion wellbeingRateQuestion;
-    private TemplateQuestion dayRateQuestion;
 
     public InMemoryTemplateQuestionRepository() {
         this.templateQuestions = new HashMap<String, TemplateQuestion>();
@@ -49,21 +46,6 @@ public class InMemoryTemplateQuestionRepository implements TemplateQuestionRepos
     public void remove(TemplateQuestion templateQuestion) {
         this.templateQuestions.remove(templateQuestion.getId());
 
-    }
-
-    @Override
-    public TemplateQuestion getDayRateQuestion() {
-        return this.dayRateQuestion;
-    }
-
-    @Override
-    public TemplateQuestion getWellbeingRateQuestion() {
-        return this.wellbeingRateQuestion;
-    }
-
-    @Override
-    public TemplateQuestion getProductivityRateQuestion() {
-        return this.productivityRateQuestion;
     }
 
 }
