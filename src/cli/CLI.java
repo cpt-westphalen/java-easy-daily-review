@@ -16,8 +16,11 @@ import application.entities.TemplateQuestion;
 import application.entities.TemplateReview;
 import application.entities.User;
 import application.entities.TemplateQuestion.Type;
+import application.entities.TemplateReview.Period;
+import application.repositories.TemplateReviewRepository;
 import application.useCases.GetReviews;
 import application.useCases.ListTemplateReviews;
+import mocks.TextDbTemplateReviewRepository;
 import application.useCases.CreateNewReview;
 
 public class CLI {
@@ -210,7 +213,7 @@ public class CLI {
 
     }
 
-    public void previousReviewsMenu() {
+    private void previousReviewsMenu() {
         clear();
         System.out.println("----- User Reviews -----");
         Integer option = Menu.showOptions(scan,
@@ -345,7 +348,7 @@ public class CLI {
         }
     }
 
-    public void settingsMenu() {
+    private void settingsMenu() {
         clear();
         System.out.println("----- Settings -----");
         String[] options = { "Customize Review template" };
@@ -371,7 +374,7 @@ public class CLI {
             case 0:
                 TemplateReview selectedTemplateReview = selectDailyReviewTemplate();
                 scan.nextLine();
-                // TODO customizeReviewTemplate(selectedTemplateReview);
+                customizeReviewTemplate(selectedTemplateReview);
                 break;
             case 1:
                 // TODO List weekly review templates for selection
@@ -404,7 +407,43 @@ public class CLI {
         return templateReviews.get(selectedOption);
     }
 
-    public void printReview(Review review) {
+    private void customizeReviewTemplate(TemplateReview template) {
+        String[] options = { "View details", "Add question", "Remove question", "Edit template name",
+                template.getPeriod().equals(Period.DAILY) ? "Change periodicity to WEEKLY"
+                        : "Change periodicity to DAILY" };
+        System.out.println("----- Customize Template :: " + template.getDisplayName() + " -----");
+        Integer selected = Menu.showOptions(scan, options);
+        switch (selected) {
+            case 0:
+                // TODO print template details
+                break;
+            case 1:
+                // TODO add question to selected template
+                break;
+            case 2:
+                // TODO remove question from selected template
+                break;
+            case 3:
+                scan.nextLine();
+                System.out.println("Type a new title / name for the template: ");
+                String newName = scan.nextLine();
+                template.setDisplayName(newName);
+                break;
+            case 4:
+                if (template.getPeriod().equals(Period.WEEKLY)) {
+                    template.setPeriod(Period.DAILY);
+                    break;
+                }
+                template.setPeriod(Period.WEEKLY);
+                break;
+
+            default:
+                break;
+        }
+        // TODO update template review use-case
+    }
+
+    private void printReview(Review review) {
         clear();
         System.out.println("------ Review :: " + review.getDate() + " ------");
         System.out.println();
