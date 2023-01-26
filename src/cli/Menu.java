@@ -11,7 +11,7 @@ public class Menu {
                 System.out.println("(" + (i + 1) + ") " + options[i]);
             }
             Integer option = scan.nextInt();
-            if (option >= 1 && option < (options.length + 1)) {
+            if (option >= 1 && option <= options.length) {
                 return option - 1;
             }
             System.out.println("Enter a valid option");

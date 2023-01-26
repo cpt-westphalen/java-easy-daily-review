@@ -1,0 +1,145 @@
+package mocks;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import application.entities.TemplateQuestion;
+import application.entities.TemplateReview;
+import application.entities.TemplateReview.Period;
+import application.repositories.TemplateReviewRepository;
+import config.Config;
+import utils.MakeTemplateQuestions;
+
+public class TextDbTemplateReviewRepository implements TemplateReviewRepository {
+    private Map<String, TemplateReview> templateReviews;
+
+    private static final Path TEMPLATE_REVIEW_DB_PATH = Path.of(Config.MOCK_DB_PATH, "templates", "template-reviews");
+
+    public TextDbTemplateReviewRepository() {
+        this.templateReviews = new HashMap<String, TemplateReview>();
+
+        // check text database for template files
+        if (TEMPLATE_REVIEW_DB_PATH.toFile().exists()) {
+            List<TemplateReview> templateReviewsFromTextFiles = listTemplateReviewsFromTextFiles(
+                    TEMPLATE_REVIEW_DB_PATH);
+            for (TemplateReview templateReview : templateReviewsFromTextFiles) {
+                this.templateReviews.putIfAbsent(templateReview.getId(), templateReview);
+            }
+        } else {
+            try {
+                Files.createDirectory(TEMPLATE_REVIEW_DB_PATH);
+            } catch (Exception e) {
+                System.out.println("Error: could not create Template Review Database Folders");
+            }
+        }
+
+    }
+
+    @Override
+    public TemplateReview findById(String id) {
+        return templateReviews.get(id);
+    }
+
+    @Override
+    public List<TemplateReview> listByPeriod(Period period) {
+        List<TemplateReview> templateReviewsOfPeriod = templateReviews.values().stream()
+                .filter(tr -> tr.getPeriod().equals(period)).collect(Collectors.toList());
+        return templateReviewsOfPeriod.size() > 0 ? templateReviewsOfPeriod : null;
+    }
+
+    @Override
+    public List<TemplateReview> listAll() {
+        return templateReviews.values().stream().collect(Collectors.toList());
+    }
+
+    @Override
+    public void add(TemplateReview templateReview) {
+        templateReviews.putIfAbsent(templateReview.getId(), templateReview);
+    }
+
+    @Override
+    public void update(TemplateReview templateReview) {
+        templateReviews.replace(templateReview.getId(), templateReview);
+    }
+
+    public List<TemplateReview> listTemplateReviewsFromTextFiles(Path folderURI) {
+
+        List<TemplateReview> templateReviews = new LinkedList<>();
+
+        try (Stream<Path> files = Files.list(folderURI);) {
+
+            Iterator<Path> fileIterator = files.iterator();
+
+            while (fileIterator.hasNext()) {
+                File file = fileIterator.next().toFile();
+
+                TemplateReview templateReviewFromFile = makeTemplateReviewFromFile(file);
+
+                templateReviews.add(templateReviewFromFile);
+            }
+
+            return templateReviews;
+
+        } catch (Exception e) {
+            System.out.println("Error: Unable to list template files from folder.");
+            return null;
+        }
+
+    }
+
+    private TemplateReview makeTemplateReviewFromFile(File file) {
+        String id, name;
+        Period period = Period.DAILY; // default
+
+        List<TemplateQuestion> questions = new LinkedList<TemplateQuestion>();
+
+        if (!file.exists())
+            return null;
+
+        try (Scanner fileScanner = new Scanner(file)) {
+
+            String line = fileScanner.nextLine();
+            // check for name
+            if (line.startsWith("n")) {
+                name = line.substring(2);
+                line = fileScanner.nextLine();
+            } else {
+                name = null;
+            }
+            // check for id in template txt
+            if (line.startsWith("i")) {
+                id = line.substring(2);
+                line = fileScanner.nextLine();
+            } else {
+                id = UUID.randomUUID().toString();
+            }
+            // check for periodicity
+            if (line.equalsIgnoreCase("daily")) {
+                period = Period.DAILY;
+            } else if (line.equalsIgnoreCase("weekly")) {
+                period = Period.WEEKLY;
+            }
+
+            // create questions based on type / text from each line of the file
+            questions = MakeTemplateQuestions.fromScannerNextLine(fileScanner);
+
+            TemplateReview template = new TemplateReview(id, period, questions, name);
+
+            return template;
+        } catch (Exception e) {
+            System.out.println("Could not read file at: " + file.getAbsolutePath());
+            return null;
+        }
+    }
+
+}

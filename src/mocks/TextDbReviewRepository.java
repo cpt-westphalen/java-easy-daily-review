@@ -26,12 +26,12 @@ import application.repositories.ReviewRepository;
 
 import config.Config;
 
-public class InMemoryReviewRepository implements ReviewRepository {
+public class TextDbReviewRepository implements ReviewRepository {
     private Map<String, Review> reviews;
 
     private Path REVIEW_DB_PATH = Path.of(Config.MOCK_DB_PATH, "reviews");
 
-    public InMemoryReviewRepository() {
+    public TextDbReviewRepository() {
         this.reviews = new HashMap<String, Review>();
         List<Review> dbReviews = readReviewsFromFiles(REVIEW_DB_PATH);
         if (dbReviews != null) {
@@ -186,9 +186,13 @@ public class InMemoryReviewRepository implements ReviewRepository {
 
     @Override
     public void add(Review review) {
+        List<Review> reviewListFromAuthor = getManyByAuthorId(review.getAuthorId());
+        Review lastReview = reviewListFromAuthor.get(reviewListFromAuthor.size() - 1);
+        if (lastReview.getDate().equals(review.getDate())) {
+            removeById(lastReview.getId());
+        }
         this.reviews.put(review.getId(), review);
         writeToTextFile(review);
-
     }
 
     private void writeToTextFile(Review review) {

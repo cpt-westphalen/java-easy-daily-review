@@ -2,13 +2,16 @@ package cli;
 
 import application.repositories.ReviewRepository;
 import application.repositories.TemplateQuestionRepository;
+import application.repositories.TemplateReviewRepository;
 import application.repositories.UserRepository;
-import mocks.InMemoryReviewRepository;
+import mocks.TextDbReviewRepository;
 import mocks.InMemoryTemplateQuestionRepository;
-import mocks.InMemoryUserRepository;
+import mocks.TextDbUserRepository;
+import mocks.TextDbTemplateReviewRepository;
 
 public class CliModule {
-    public static UserRepository userRepository = new InMemoryUserRepository();
-    public static ReviewRepository reviewRepository = new InMemoryReviewRepository();
+    public static UserRepository userRepository = new TextDbUserRepository();
+    public static ReviewRepository reviewRepository = new TextDbReviewRepository();
     public static TemplateQuestionRepository templateQuestionRepository = new InMemoryTemplateQuestionRepository();
+    public static TemplateReviewRepository templateReviewRepository = new TextDbTemplateReviewRepository();
 }

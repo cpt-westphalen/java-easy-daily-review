@@ -17,7 +17,8 @@ import application.entities.TemplateReview;
 import application.entities.User;
 import application.entities.TemplateQuestion.Type;
 import application.useCases.GetReviews;
-import application.useCases.RegisterNewReview;
+import application.useCases.ListTemplateReviews;
+import application.useCases.CreateNewReview;
 
 public class CLI {
 
@@ -124,17 +125,22 @@ public class CLI {
 
             switch (selectedOption) {
                 case 0:
-                    // new daily review use-case
+                    // write new review
                     this.scan.nextLine();
-                    this.clear();
-                    this.registerNewReview();
+                    this.selectTemplateReview();
                     break;
 
                 case 1:
                     // check previous reviews
                     this.scan.nextLine();
-                    this.clear();
                     this.previousReviewsMenu();
+                    break;
+
+                case 2:
+                    // show settings
+                    scan.nextLine();
+                    clear();
+                    settingsMenu();
                     break;
 
                 default:
@@ -148,11 +154,23 @@ public class CLI {
         }
     }
 
-    private void registerNewReview() {
+    private void selectTemplateReview() {
         this.clear();
-        RegisterNewReview registerNewReview = new RegisterNewReview(CliModule.reviewRepository);
-        TemplateReview template = registerNewReview.getTemplateReviewFrom("src/templates", "daily-review-template.txt");
-        System.out.println("You are using the default daily review template.");
+        ListTemplateReviews listTemplateReviews = new ListTemplateReviews(CliModule.templateReviewRepository);
+        List<TemplateReview> templateReviewsList = listTemplateReviews.exec();
+        String[] templateOptions = new String[templateReviewsList.size()];
+        for (int i = 0; i < templateReviewsList.size(); i++) {
+            TemplateReview tr = templateReviewsList.get(i);
+            templateOptions[i] = tr.getDisplayName() + " - Questions: " + tr.getTemplateQuestions().size();
+        }
+        Integer selectedOption = Menu.showOptions(scan, templateOptions);
+        TemplateReview template = templateReviewsList.get(selectedOption);
+        scan.nextLine();
+        registerNewReview(template);
+    }
+
+    private void registerNewReview(TemplateReview template) {
+        clear();
         System.out.println("----- " + LocalDate.now() + " -----");
         System.out.println();
         List<Question> questions = new LinkedList<Question>();
@@ -178,28 +196,10 @@ public class CLI {
             }
             questions.add(question);
         }
-        // create the new review from the questions and answers
-        Review review = new Review(Auth.getLoggedUser().getId(), UUID.randomUUID().toString(), template.getPeriod(),
+        CreateNewReview createNewReview = new CreateNewReview(CliModule.reviewRepository);
+        Review review = createNewReview.exec(Auth.getLoggedUser().getId(), UUID.randomUUID().toString(),
+                template.getPeriod(),
                 LocalDate.now(), questions);
-
-        // set default rates by querying the question id
-        Integer dayRate = review.getQuestionById(
-                "36276627-b507-41ff-b9f0-8bc7c9709986")
-                .getAnswer().getValueAsInteger();
-        Integer wellbeingRate = review
-                .getQuestionById(
-                        "1236d288-9b69-458e-8474-c58fcd35ad08")
-                .getAnswer().getValueAsInteger();
-        Integer productivityRate = review
-                .getQuestionById(
-                        "86f8f91a-17cb-4058-9dc2-5d439b3daa58")
-                .getAnswer().getValueAsInteger();
-
-        review.setDayRate(dayRate);
-        review.setWellbeingRate(wellbeingRate);
-        review.setProductivityRate(productivityRate);
-
-        registerNewReview.saveToRepository(review);
         System.out.println("Completed! Would you like to see your answers? ('y' or 'n')");
         if (this.scan.nextLine().charAt(0) == 'n') {
             return;
@@ -341,6 +341,65 @@ public class CLI {
 
             }
         }
+    }
+
+    public void settingsMenu() {
+        clear();
+        System.out.println("----- Settings -----");
+        String[] options = { "Customize Review template" };
+        Integer selectedOption = Menu.showOptions(scan, options);
+        switch (selectedOption) {
+            case 0:
+                // Customize Review Template
+                scan.nextLine();
+                customizeReviewTemplatePeriodMenu();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private void customizeReviewTemplatePeriodMenu() {
+        clear();
+        System.out.println("----- Customize Review Template -----");
+        String[] options = { "Daily Review Templates", "Weekly Review Templates" };
+        Integer selectedOption = Menu.showOptions(scan, options);
+        switch (selectedOption) {
+            case 0:
+                TemplateReview selectedTemplateReview = selectDailyReviewTemplate();
+                scan.nextLine();
+                // TODO customizeReviewTemplate(selectedTemplateReview);
+                break;
+            case 1:
+                // TODO List weekly review templates for selection
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private TemplateReview selectDailyReviewTemplate() {
+        ListTemplateReviews listTemplateReviews = new ListTemplateReviews(CliModule.templateReviewRepository);
+        List<TemplateReview> templateReviews = listTemplateReviews.exec();
+
+        clear();
+        System.out.println("----- Daily Review Templates -----");
+
+        if (templateReviews == null || templateReviews.isEmpty()) {
+            System.out.println("* No Templates Found! *");
+            System.out.println("(Press 'Enter' to return)");
+            scan.nextLine();
+            return null;
+        }
+        String[] templateReviewDisplayNames = new String[templateReviews.size()];
+        for (int i = 0; i < templateReviews.size(); i++) {
+            TemplateReview tr = templateReviews.get(i);
+            templateReviewDisplayNames[i] = tr.getDisplayName() + " - Questions: " + tr.getTemplateQuestions().size();
+        }
+        Integer selectedOption = Menu.showOptions(scan, templateReviewDisplayNames);
+        return templateReviews.get(selectedOption);
     }
 
     public void printReview(Review review) {

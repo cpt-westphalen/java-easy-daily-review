@@ -15,12 +15,12 @@ import application.entities.User;
 import application.repositories.UserRepository;
 import config.Config;
 
-public class InMemoryUserRepository implements UserRepository {
-    public Map<String, User> users;
+public class TextDbUserRepository implements UserRepository {
+    private Map<String, User> users;
 
     private Path USER_DB_PATH = Path.of(Config.MOCK_DB_PATH, "users.txt");
 
-    public InMemoryUserRepository() {
+    public TextDbUserRepository() {
         this.users = new HashMap<String, User>();
         List<User> usersDbList = readUsersFile();
         if (usersDbList != null && usersDbList.size() > 0) {

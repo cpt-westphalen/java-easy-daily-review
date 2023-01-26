@@ -19,14 +19,15 @@ public class TemplateReview {
     public static TemplateQuestion dayRateQuestion = new TemplateQuestion("36276627-b507-41ff-b9f0-8bc7c9709986",
             Type.NUMBER, "How would you rate your day as a whole?");
 
-    private String id;
+    private String id, name;
     private Period period;
     private List<TemplateQuestion> templateQuestions;
 
-    public TemplateReview(String id, Period period, List<TemplateQuestion> templateQuestions) {
+    public TemplateReview(String id, Period period, List<TemplateQuestion> templateQuestions, String name) {
         this.id = id;
         this.period = period;
         this.templateQuestions = templateQuestions;
+        this.name = name != null ? name : "Unnamed Template (" + id + ")";
 
         boolean injectDayRate = true, injectWellbeingRate = true,
                 injectProductivityRate = true;
@@ -85,6 +86,14 @@ public class TemplateReview {
             }
         }
         return null;
+    }
+
+    public String getDisplayName() {
+        return this.name;
+    }
+
+    public void setDisplayName(String newName) {
+        this.name = newName;
     }
 
     @Override
