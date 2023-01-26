@@ -34,6 +34,7 @@ public class CLI {
     }
 
     public void authMenu() {
+        clear();
         System.out.println("----- Authentication -----");
         Integer option = Menu.showOptions(this.scan, new String[] { "Register new user", "Login" });
         switch (option) {
@@ -149,6 +150,7 @@ public class CLI {
             System.out.println("Do you wish to exit Easy Daily Review? ('y' or 'n')");
 
             if (this.scan.nextLine().startsWith("y")) {
+                Auth.logout();
                 break;
             }
         }

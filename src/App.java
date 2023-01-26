@@ -16,12 +16,10 @@ public class App {
 
         while (true) {
             try {
-                while (!Auth.isAuthorized()) {
-                    cli.clear();
+                if (Auth.isAuthorized()) {
+                    cli.mainMenu();
+                } else {
                     cli.authMenu();
-                    while (Auth.isAuthorized()) {
-                        cli.mainMenu();
-                    }
                 }
             } catch (Exception e) {
                 scanner.nextLine();

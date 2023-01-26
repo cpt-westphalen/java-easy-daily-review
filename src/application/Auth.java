@@ -4,16 +4,14 @@ import application.entities.User;
 
 public class Auth {
     private static User loggedUser;
-    private static boolean authorized = false;
 
     public static boolean isAuthorized() {
-        return authorized;
+        return loggedUser != null;
     }
 
     public static boolean login(User user, Integer pin) {
         if (user.verifyPin(pin)) {
             loggedUser = user;
-            authorized = true;
             return true;
         }
         return false;
@@ -21,5 +19,9 @@ public class Auth {
 
     public static User getLoggedUser() {
         return loggedUser;
+    }
+
+    public static void logout() {
+        loggedUser = null;
     }
 }
