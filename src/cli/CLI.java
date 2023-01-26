@@ -36,40 +36,40 @@ public class CLI {
     public void authMenu() {
         clear();
         System.out.println("----- Authentication -----");
-        Integer option = Menu.showOptions(this.scan, new String[] { "Register new user", "Login" });
+        Integer option = Menu.showOptions(scan, new String[] { "Register new user", "Login" });
         switch (option) {
             case 0:
-                this.scan.nextLine();
-                this.registerUser();
+                scan.nextLine();
+                registerUser();
                 break;
             case 1:
-                this.scan.nextLine();
-                this.loginUser();
+                scan.nextLine();
+                loginUser();
                 break;
         }
     }
 
     private void loginUser() {
         while (!Auth.isAuthorized()) {
-            this.clear();
+            clear();
             System.out.println("----- Login -----");
             String name, pin;
             System.out.println("Name: ");
-            name = this.scan.nextLine();
+            name = scan.nextLine();
             System.out.println("Pin: ");
-            pin = this.scan.nextLine();
-            this.clear();
+            pin = scan.nextLine();
+            clear();
             User user = CliModule.userRepository.findByName(name);
             if (user == null) {
                 System.out.println("*Error: User not found*");
                 System.out.println();
-                this.authMenu();
+                authMenu();
                 return;
             }
             if (!Auth.login(user, Integer.valueOf(pin))) {
                 System.out.println("*Error: Incorrect Pin*");
                 System.out.println();
-                this.authMenu();
+                authMenu();
                 return;
             }
         }
@@ -77,18 +77,18 @@ public class CLI {
     }
 
     private void registerUser() {
-        this.clear();
+        clear();
         System.out.println("----- Register -----");
         String login;
         Integer pin;
 
         System.out.println("Name: ");
-        login = this.scan.nextLine();
+        login = scan.nextLine();
         do {
             System.out.println();
             System.out.println("Pin (numbers only): ");
             try {
-                pin = this.scan.nextInt();
+                pin = scan.nextInt();
                 break;
             } catch (Exception e) {
                 System.out.println("* Enter only numbers *");
@@ -96,7 +96,7 @@ public class CLI {
 
         } while (true);
 
-        this.clear();
+        clear();
 
         String id = UUID.randomUUID().toString();
         User user = new User(id, login, pin);
@@ -117,24 +117,24 @@ public class CLI {
             String[] options = new String[] {
                     getReviews.hasReviewedToday() ? "Overwrite today's review" : "Write today's review",
                     "Check previous reviews", "Settings" };
-            this.clear();
+            clear();
             LocalDate today = LocalDate.now();
             String name = Auth.getLoggedUser().getName();
             System.out.println("----- " + today + " :: " + name + " -----");
 
-            Integer selectedOption = Menu.showOptions(this.scan, options);
+            Integer selectedOption = Menu.showOptions(scan, options);
 
             switch (selectedOption) {
                 case 0:
                     // write new review
-                    this.scan.nextLine();
-                    this.selectTemplateReview();
+                    scan.nextLine();
+                    selectTemplateReview();
                     break;
 
                 case 1:
                     // check previous reviews
-                    this.scan.nextLine();
-                    this.previousReviewsMenu();
+                    scan.nextLine();
+                    previousReviewsMenu();
                     break;
 
                 case 2:
@@ -149,7 +149,7 @@ public class CLI {
             }
             System.out.println("Do you wish to exit Easy Daily Review? ('y' or 'n')");
 
-            if (this.scan.nextLine().startsWith("y")) {
+            if (scan.nextLine().startsWith("y")) {
                 Auth.logout();
                 break;
             }
@@ -157,7 +157,7 @@ public class CLI {
     }
 
     private void selectTemplateReview() {
-        this.clear();
+        clear();
         ListTemplateReviews listTemplateReviews = new ListTemplateReviews(CliModule.templateReviewRepository);
         List<TemplateReview> templateReviewsList = listTemplateReviews.exec();
         String[] templateOptions = new String[templateReviewsList.size()];
@@ -189,7 +189,7 @@ public class CLI {
             if (question.getType().equals(Type.TEXT)) {
                 System.out.println("(Type any text or leave it blank, 'Enter' to submit)");
             }
-            String answerText = this.scan.nextLine();
+            String answerText = scan.nextLine();
             System.out.println();
             System.out.println("--");
             if (!answerText.isEmpty()) {
@@ -203,26 +203,26 @@ public class CLI {
                 template.getPeriod(),
                 LocalDate.now(), questions);
         System.out.println("Completed! Would you like to see your answers? ('y' or 'n')");
-        if (this.scan.nextLine().charAt(0) == 'n') {
+        if (scan.nextLine().charAt(0) == 'n') {
             return;
         }
-        this.printReview(review);
+        printReview(review);
 
     }
 
     public void previousReviewsMenu() {
-        this.clear();
+        clear();
         System.out.println("----- User Reviews -----");
-        Integer option = Menu.showOptions(this.scan,
+        Integer option = Menu.showOptions(scan,
                 new String[] { "Display recent reviews", "Search review by date", "Go back" });
         switch (option) {
             case 0:
                 scan.nextLine();
-                this.displayRecentReviews();
+                displayRecentReviews();
                 break;
             case 1:
                 scan.nextLine();
-                this.searchReviewByDate();
+                searchReviewByDate();
                 break;
 
             case 2:
@@ -236,7 +236,7 @@ public class CLI {
     private void displayRecentReviews() {
         GetReviews getReviews = new GetReviews(CliModule.reviewRepository);
         List<Review> userReviews;
-        this.clear();
+        clear();
         System.out.println("----- User Reviews -----");
 
         try {
@@ -245,7 +245,7 @@ public class CLI {
             if (userReviews.size() == 0) {
                 System.out.println("* No Reviews Yet! *");
                 System.out.println("(Press 'Enter' to return)");
-                this.scan.nextLine();
+                scan.nextLine();
                 return;
             }
             int displayNumber = 0;
@@ -270,11 +270,11 @@ public class CLI {
             while (true) {
                 System.out.println("Enter the number to display the review, or 'q' to return");
                 try {
-                    Integer option = this.scan.nextInt();
-                    this.scan.nextLine();
+                    Integer option = scan.nextInt();
+                    scan.nextLine();
                     if (option > 0 && option <= displayNumber) {
                         Review selectedReview = userReviews.get(userReviews.size() - option);
-                        this.printReview(selectedReview);
+                        printReview(selectedReview);
                         return;
                     }
                     System.out.println("* Enter a valid option *");
@@ -295,7 +295,7 @@ public class CLI {
         while (true) {
 
             List<Review> userReviews;
-            this.clear();
+            clear();
             System.out.println("----- Search Review -----");
             try {
                 userReviews = getReviews.listAllFromLoggedUser();
@@ -306,11 +306,11 @@ public class CLI {
             if (userReviews.size() == 0) {
                 System.out.println("* No Reviews Yet! *");
                 System.out.println("(Press 'Enter' to return)");
-                this.scan.nextLine();
+                scan.nextLine();
                 return;
             }
             System.out.println("Type a date (Format: yyyy-mm-dd):");
-            String dateString = this.scan.nextLine().trim();
+            String dateString = scan.nextLine().trim();
             LocalDate date;
             try {
                 date = LocalDate.parse(dateString);
@@ -405,7 +405,7 @@ public class CLI {
     }
 
     public void printReview(Review review) {
-        this.clear();
+        clear();
         System.out.println("------ Review :: " + review.getDate() + " ------");
         System.out.println();
         System.out.println("Periodicity: " + review.getPeriod().name());
