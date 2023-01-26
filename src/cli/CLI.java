@@ -33,6 +33,7 @@ public class CLI {
     }
 
     public void authMenu() {
+        System.out.println("----- Authentication -----");
         Integer option = Menu.showOptions(this.scan, new String[] { "Register new user", "Login" });
         switch (option) {
             case 0:
@@ -49,8 +50,8 @@ public class CLI {
     private void loginUser() {
         while (!Auth.isAuthorized()) {
             this.clear();
+            System.out.println("----- Login -----");
             String name, pin;
-            System.out.println("Please, login.");
             System.out.println("Name: ");
             name = this.scan.nextLine();
             System.out.println("Pin: ");
@@ -75,21 +76,28 @@ public class CLI {
 
     private void registerUser() {
         this.clear();
-        System.out.println("Please, sign up: ");
-        System.out.println("--");
-        System.out.println();
-        String login, pin;
+        System.out.println("----- Register -----");
+        String login;
+        Integer pin;
 
         System.out.println("Name: ");
         login = this.scan.nextLine();
-        System.out.println();
-        System.out.println("Pin (numbers only): ");
-        pin = this.scan.nextLine();
+        do {
+            System.out.println();
+            System.out.println("Pin (numbers only): ");
+            try {
+                pin = this.scan.nextInt();
+                break;
+            } catch (Exception e) {
+                System.out.println("* Enter only numbers *");
+            }
+
+        } while (true);
 
         this.clear();
 
         String id = UUID.randomUUID().toString();
-        User user = new User(id, login, Integer.valueOf(pin));
+        User user = new User(id, login, pin);
         CliModule.userRepository.add(user);
 
         List<User> users = CliModule.userRepository.getAll();
@@ -102,12 +110,15 @@ public class CLI {
     }
 
     public void mainMenu() {
-        String[] options = new String[] { "New daily review", "Check previous reviews", "Settings" };
+        GetReviews getReviews = new GetReviews(CliModule.reviewRepository);
         while (true) {
+            String[] options = new String[] {
+                    getReviews.hasReviewedToday() ? "Overwrite today's review" : "Write today's review",
+                    "Check previous reviews", "Settings" };
             this.clear();
             LocalDate today = LocalDate.now();
             String name = Auth.getLoggedUser().getName();
-            System.out.println("------------- " + today + " :: " + name);
+            System.out.println("----- " + today + " :: " + name + " -----");
 
             Integer selectedOption = Menu.showOptions(this.scan, options);
 

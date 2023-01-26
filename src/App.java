@@ -10,18 +10,26 @@ public class App {
 
     public static void main(String[] args) throws Exception {
         cli.clear();
-        System.out.println("//----- Easy Daily Review ----- author: @cpt-westphalen -----//");
-        System.out.println();
+        System.out.println("----- Easy Daily Review :::: author: @cpt-westphalen -----");
+        System.out.println("Press 'Enter' to start.");
+        scanner.nextLine();
 
         while (!Auth.isAuthorized()) {
+            cli.clear();
             cli.authMenu();
             while (Auth.isAuthorized()) {
-                cli.mainMenu();
+                try {
+                    cli.mainMenu();
+                } catch (Exception e) {
+                    scanner.nextLine();
+                    System.out.println("Ops, something went wrong. Let's try it again, shall we? ('Enter' to return)");
+                    scanner.nextLine();
+                }
             }
         }
 
-        // TODO Create own template review
         // TODO If there is a review for today, display text "Overwrite today's review"
+        // TODO Create own template review
 
     }
 }
