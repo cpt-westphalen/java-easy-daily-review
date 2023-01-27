@@ -20,6 +20,7 @@ import application.useCases.GetReviews;
 import application.useCases.GetTemplateQuestions;
 import application.useCases.ListTemplateReviews;
 import application.useCases.RemoveQuestionFromTemplateReview;
+import application.useCases.UpdateTemplateReview;
 import application.useCases.AddQuestionToTemplateReview;
 import application.useCases.CreateNewReview;
 import application.useCases.CreateTemplateQuestion;
@@ -433,6 +434,7 @@ public class CLI {
                 scan.nextLine();
                 return;
             }
+            UpdateTemplateReview updateTemplateReview = new UpdateTemplateReview(CliModule.templateReviewRepository);
             switch (selected) {
                 case 0:
                     scan.nextLine();
@@ -444,7 +446,6 @@ public class CLI {
                     return;
                 case 2:
                     scan.nextLine();
-                    // TODO remove question from selected template
                     removeQuestionFromTemplateReviewMenu(template);
                     break;
                 case 3:
@@ -452,20 +453,22 @@ public class CLI {
                     System.out.println("Type a new title / name for the template: ");
                     String newName = scan.nextLine();
                     template.setDisplayName(newName);
+                    updateTemplateReview.exec(template);
                     break;
                 case 4:
                     scan.nextLine();
                     if (template.getPeriod().equals(Period.WEEKLY)) {
                         template.setPeriod(Period.DAILY);
+                        updateTemplateReview.exec(template);
                         break;
                     }
                     template.setPeriod(Period.WEEKLY);
+                    updateTemplateReview.exec(template);
                     break;
-
                 default:
                     break;
             }
-            // TODO update template review use-case 'updateTemplateReview(TemplateReview t)'
+
         }
     }
 
