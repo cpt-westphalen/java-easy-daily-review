@@ -64,14 +64,22 @@ public class TextDbTemplateQuestionRepository implements TemplateQuestionReposit
             return false;
         }
         this.templateQuestions.replace(id, tq);
+        writeTemplateQuestionToTextFile(newTemplateQuestion);
         return true;
     }
 
     @Override
     public void add(TemplateQuestion templateQuestion) {
         this.templateQuestions.put(templateQuestion.getId(), templateQuestion);
+        writeTemplateQuestionToTextFile(templateQuestion);
+
+    }
+
+    public void writeTemplateQuestionToTextFile(TemplateQuestion templateQuestion) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(
                 Path.of(TEMPLATE_QUESTION_DB_PATH.toString(), templateQuestion.getId() + ".txt").toFile()))) {
+            writer.write("n " + templateQuestion.getDisplayName());
+            writer.newLine();
             writer.write("i " + templateQuestion.getId());
             writer.newLine();
             String typeChar;
@@ -95,7 +103,6 @@ public class TextDbTemplateQuestionRepository implements TemplateQuestionReposit
         } catch (Exception e) {
             System.out.println("Error: could not write template question to file");
         }
-
     }
 
     @Override

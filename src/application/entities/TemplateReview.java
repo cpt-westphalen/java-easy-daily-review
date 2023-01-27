@@ -76,12 +76,12 @@ public class TemplateReview {
     }
 
     public void removeQuestion(String id) {
-        this.templateQuestions.removeIf(question -> question.getId() == id);
+        this.templateQuestions.removeIf(question -> question.getId().equals(id));
     }
 
     public TemplateQuestion getTemplateQuestionById(String id) {
         for (TemplateQuestion q : this.templateQuestions) {
-            if (q.getId() == id) {
+            if (q.getId().equals(id)) {
                 return q;
             }
         }

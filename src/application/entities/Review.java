@@ -82,7 +82,7 @@ public class Review {
     }
 
     public void removeQuestion(String id) {
-        this.questions.removeIf(question -> question.getId() == id);
+        this.questions.removeIf(question -> question.getId().equals(id));
     }
 
     public Question getQuestionById(String id) {

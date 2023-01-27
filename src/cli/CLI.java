@@ -20,7 +20,9 @@ import application.entities.TemplateReview.Period;
 import application.useCases.GetReviews;
 import application.useCases.GetTemplateQuestions;
 import application.useCases.ListTemplateReviews;
+import application.useCases.AddQuestionToTemplateReview;
 import application.useCases.CreateNewReview;
+import application.useCases.CreateTemplateQuestion;
 
 public class CLI {
 
@@ -407,23 +409,21 @@ public class CLI {
     }
 
     private void customizeReviewTemplate(TemplateReview template) {
+        clear();
+        System.out.println("----- Customize Template :: " + template.getDisplayName() + " -----");
         String[] options = { "View details", "Add question", "Remove question", "Edit template name",
                 template.getPeriod().equals(Period.DAILY) ? "Change periodicity to WEEKLY"
                         : "Change periodicity to DAILY" };
-        System.out.println("----- Customize Template :: " + template.getDisplayName() + " -----");
         Integer selected = Menu.showOptions(scan, options);
         switch (selected) {
             case 0:
                 scan.nextLine();
-                // TODO print template details
+                displayTemplateReviewDetails(template);
                 break;
             case 1:
                 scan.nextLine();
-                // TODO add question to selected template
-                GetTemplateQuestions getTemplateQuestions = new GetTemplateQuestions(
-                        CliModule.templateQuestionRepository);
-                printTemplateQuestions(getTemplateQuestions.exec());
-                break;
+                addQuestionToTemplateReviewMenu(template);
+                return;
             case 2:
                 scan.nextLine();
                 // TODO remove question from selected template
@@ -449,11 +449,166 @@ public class CLI {
         // TODO update template review use-case 'updateTemplateReview(TemplateReview t)'
     }
 
-    private void printTemplateQuestions(List<TemplateQuestion> templateQuestions) {
-        for (TemplateQuestion tq : templateQuestions) {
+    private void displayTemplateReviewDetails(TemplateReview templateReview) {
+        clear();
+        System.out.println("----- Template Details :: " + templateReview.getId() + " -----");
+        System.out.println("Name: " + templateReview.getDisplayName());
+        System.out.println("Periodicity: " + templateReview.getPeriod());
+        System.out.println("----- Questions -----");
+        List<TemplateQuestion> templateQuestions = templateReview.getTemplateQuestions();
+        for (int i = 0; i < templateQuestions.size(); i++) {
+            TemplateQuestion tq = templateQuestions.get(i);
+            System.out.println(i + ") " + tq.getDisplayName());
+            System.out.println("Text: " + tq.getText());
+            System.out.println("Type: " + tq.getType());
+            System.out.println("-----");
+        }
+        System.out.println("(Press 'Enter' to return)");
+        scan.nextLine();
+
+    }
+
+    private void addQuestionToTemplateReviewMenu(TemplateReview template) {
+        clear();
+        System.out.println("----- Add Question :: " + template.getDisplayName() + "-----");
+        Integer selected = Menu.showOptions(scan,
+                new String[] { "Existing Template Questions", "Create New Template Question" });
+
+        switch (selected) {
+            case 0:
+                scan.nextLine();
+                addExistingQuestionToTemplateReview(template);
+                break;
+            case 1:
+                scan.nextLine();
+                TemplateQuestion createdTemplateQuestion = createNewTemplateQuestion();
+                if (createdTemplateQuestion == null)
+                    break;
+                AddQuestionToTemplateReview addQuestionToTemplateReview = new AddQuestionToTemplateReview(
+                        CliModule.templateReviewRepository);
+                addQuestionToTemplateReview.exec(template, createdTemplateQuestion);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private void addExistingQuestionToTemplateReview(TemplateReview template) {
+
+        GetTemplateQuestions getTemplateQuestions = new GetTemplateQuestions(
+                CliModule.templateQuestionRepository);
+        List<TemplateQuestion> allTemplateQuestions = getTemplateQuestions.exec();
+
+        List<TemplateQuestion> templateQuestionsOnTemplateReview = template.getTemplateQuestions();
+
+        List<TemplateQuestion> filteredTemplateQuestions = allTemplateQuestions.stream().filter(tq -> {
+            for (TemplateQuestion existingTemplateQuestion : templateQuestionsOnTemplateReview) {
+                if (existingTemplateQuestion.getId().equals(tq.getId())) {
+                    return false;
+                }
+            }
+            return true;
+        }).collect(Collectors.toList());
+
+        TemplateQuestion selectedTemplateQuestion = selectTemplateQuestionFromList(filteredTemplateQuestions);
+
+        if (selectedTemplateQuestion == null)
+            return;
+
+        AddQuestionToTemplateReview addQuestionToTemplateReview = new AddQuestionToTemplateReview(
+                CliModule.templateReviewRepository);
+        TemplateReview updatedTemplateReview = addQuestionToTemplateReview.exec(template,
+                selectedTemplateQuestion);
+
+        if (updatedTemplateReview == null) {
+            System.out.println("* This question is already on the Template *");
+        }
+
+        System.out.println("[ Template Review updated! ]");
+        System.out.println("(Press 'Enter' to return)");
+        scan.nextLine();
+    }
+
+    private TemplateQuestion createNewTemplateQuestion() {
+        int attempts = 0;
+        while (true) {
+            try {
+                clear();
+                System.out.println("----- Create Template Question -----");
+                System.out.println("Enter the question text:");
+                String questionText = scan.nextLine();
+
+                System.out.println();
+                System.out.println("Now, select what kind of answer this question expects:");
+
+                Integer selectedOption = Menu.showOptions(scan,
+                        new String[] { "Descriptive, textual", "Yes or No", "A number from 0 to 100" });
+                scan.nextLine();
+
+                Type type = selectedOption == 0 ? Type.TEXT : selectedOption == 1 ? Type.BOOLEAN : Type.NUMBER;
+
+                System.out.println();
+                System.out.println("Give your question a display name / title:");
+                String questionDisplayName = scan.nextLine();
+
+                System.out.println();
+                System.out.println("Is everything right? ('y' / 'n')");
+
+                if (scan.nextLine().toLowerCase().startsWith("y")) {
+                    CreateTemplateQuestion createTemplateQuestion = new CreateTemplateQuestion(
+                            CliModule.templateQuestionRepository);
+
+                    TemplateQuestion createdTemplateQuestion = createTemplateQuestion.exec(null, type, questionText,
+                            questionDisplayName);
+
+                    if (createdTemplateQuestion == null) {
+                        throw new Exception("Template Question could not be created, please verify your inputs");
+                    }
+
+                    System.out.println(
+                            "[ Success! Template Question created with id: " + createdTemplateQuestion.getId() + " ]");
+                    return createdTemplateQuestion;
+                }
+            } catch (Exception e) {
+                System.out.println("* Error: " + e.getMessage() + " *");
+                if (++attempts == 3) {
+                    System.out.println("(press 'enter' to return)");
+                    return null;
+                }
+                System.out.println("(press 'enter' to try again)");
+                scan.nextLine();
+            }
+        }
+    }
+
+    private TemplateQuestion selectTemplateQuestionFromList(List<TemplateQuestion> templateQuestions) {
+        if (templateQuestions.isEmpty()) {
+            System.out.println("* This template uses all available questions! *");
+            System.out.println("(Press 'Enter' to return)");
+            scan.nextLine();
+            return null;
+        }
+        String[] options = new String[templateQuestions.size()];
+        for (int i = 0; i < templateQuestions.size(); i++) {
+            TemplateQuestion tq = templateQuestions.get(i);
             String type = tq.getType().name();
             String formattedType = type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase();
-            System.out.println(tq.getDisplayName() + " (" + formattedType + ")");
+            options[i] = tq.getDisplayName() + " (" + formattedType + ")";
+        }
+        while (true) {
+            try {
+                Integer selected = Menu.showOptions(scan, options);
+                if (selected < 0 || selected >= templateQuestions.size()) {
+                    scan.nextLine();
+                    throw new Exception();
+                }
+                TemplateQuestion selectedTemplateQuestion = templateQuestions.get(selected);
+                scan.nextLine();
+                return selectedTemplateQuestion;
+            } catch (Exception e) {
+                System.out.println("* Enter a valid option *");
+            }
         }
     }
 
