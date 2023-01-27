@@ -41,6 +41,10 @@ public class CLI {
         clear();
         System.out.println("----- Authentication -----");
         Integer option = Menu.showOptions(scan, new String[] { "Register new user", "Login" });
+        if (option == null) {
+            scan.nextLine();
+            return;
+        }
         switch (option) {
             case 0:
                 scan.nextLine();
@@ -128,6 +132,11 @@ public class CLI {
 
             Integer selectedOption = Menu.showOptions(scan, options);
 
+            if (selectedOption == null) {
+                scan.nextLine();
+                return;
+            }
+
             switch (selectedOption) {
                 case 0:
                     // write new review
@@ -170,6 +179,10 @@ public class CLI {
             templateOptions[i] = tr.getDisplayName() + " - Questions: " + tr.getTemplateQuestions().size();
         }
         Integer selectedOption = Menu.showOptions(scan, templateOptions);
+        if (selectedOption == null) {
+            scan.nextLine();
+            return;
+        }
         TemplateReview template = templateReviewsList.get(selectedOption);
         scan.nextLine();
         registerNewReview(template);
@@ -219,6 +232,10 @@ public class CLI {
         System.out.println("----- User Reviews -----");
         Integer option = Menu.showOptions(scan,
                 new String[] { "Display recent reviews", "Search review by date", "Go back" });
+        if (option == null) {
+            scan.nextLine();
+            return;
+        }
         switch (option) {
             case 0:
                 scan.nextLine();
@@ -323,22 +340,27 @@ public class CLI {
                 scan.nextLine();
                 return;
             }
-            List<Review> reviewsWithDate = userReviews.stream().filter(review -> review.getDate().equals(date))
+            List<Review> reviewsOnDate = userReviews.stream().filter(review -> review.getDate().equals(date))
                     .collect(Collectors.toList());
-            if (reviewsWithDate.size() == 0) {
+            if (reviewsOnDate.size() == 0) {
                 System.out.println("* No Reviews Found! *");
                 System.out.println("(Press 'Enter' to return)");
                 scan.nextLine();
                 return;
             } else {
-                List<String> menu = new ArrayList<String>();
-                for (Review review : reviewsWithDate) {
-                    menu.add(review.getDate() + " - Day rate: " + review.getDayRate());
+                String[] options = new String[reviewsOnDate.size()];
+                for (int i = 0; i < options.length; i++) {
+                    Review review = reviewsOnDate.get(i);
+                    options[i] = review.getDate() + " - Day rate: " + review.getDayRate();
                 }
-                Integer option = Menu.showOptions(scan, menu.toArray(new String[menu.size()]));
-                Review selectedReview = reviewsWithDate.get(option);
-                printReview(selectedReview);
+                Integer option = Menu.showOptions(scan, options);
                 scan.nextLine();
+                if (option == null) {
+                    return;
+                }
+                Review selectedReview = reviewsOnDate.get(option);
+                printReview(selectedReview);
+
                 System.out.println("Would you like to search again?");
                 System.out.println("(Type 'y' or 'n')");
                 if (scan.nextLine().equals("n")) {
@@ -354,6 +376,10 @@ public class CLI {
         System.out.println("----- Settings -----");
         String[] options = { "Customize Review template" };
         Integer selectedOption = Menu.showOptions(scan, options);
+        if (selectedOption == null) {
+            scan.nextLine();
+            return;
+        }
         switch (selectedOption) {
             case 0:
                 // Customize Review Template
@@ -371,6 +397,10 @@ public class CLI {
         System.out.println("----- Customize Review Template -----");
         String[] options = { "Daily Review Templates", "Weekly Review Templates" };
         Integer selectedOption = Menu.showOptions(scan, options);
+        if (selectedOption == null) {
+            scan.nextLine();
+            return;
+        }
         switch (selectedOption) {
             case 0:
                 TemplateReview selectedTemplateReview = selectDailyReviewTemplate();
@@ -405,6 +435,10 @@ public class CLI {
             templateReviewDisplayNames[i] = tr.getDisplayName() + " - Questions: " + tr.getTemplateQuestions().size();
         }
         Integer selectedOption = Menu.showOptions(scan, templateReviewDisplayNames);
+        if (selectedOption == null) {
+            scan.nextLine();
+            return null;
+        }
         return templateReviews.get(selectedOption);
     }
 
@@ -415,6 +449,10 @@ public class CLI {
                 template.getPeriod().equals(Period.DAILY) ? "Change periodicity to WEEKLY"
                         : "Change periodicity to DAILY" };
         Integer selected = Menu.showOptions(scan, options);
+        if (selected == null) {
+            scan.nextLine();
+            return;
+        }
         switch (selected) {
             case 0:
                 scan.nextLine();
@@ -473,7 +511,10 @@ public class CLI {
         System.out.println("----- Add Question :: " + template.getDisplayName() + "-----");
         Integer selected = Menu.showOptions(scan,
                 new String[] { "Existing Template Questions", "Create New Template Question" });
-
+        if (selected == null) {
+            scan.nextLine();
+            return;
+        }
         switch (selected) {
             case 0:
                 scan.nextLine();
@@ -545,6 +586,8 @@ public class CLI {
                 Integer selectedOption = Menu.showOptions(scan,
                         new String[] { "Descriptive, textual", "Yes or No", "A number from 0 to 100" });
                 scan.nextLine();
+                if (selectedOption == null)
+                    return null;
 
                 Type type = selectedOption == 0 ? Type.TEXT : selectedOption == 1 ? Type.BOOLEAN : Type.NUMBER;
 
@@ -597,18 +640,14 @@ public class CLI {
             options[i] = tq.getDisplayName() + " (" + formattedType + ")";
         }
         while (true) {
-            try {
-                Integer selected = Menu.showOptions(scan, options);
-                if (selected < 0 || selected >= templateQuestions.size()) {
-                    scan.nextLine();
-                    throw new Exception();
-                }
-                TemplateQuestion selectedTemplateQuestion = templateQuestions.get(selected);
+            Integer selected = Menu.showOptions(scan, options);
+            if (selected == null) {
                 scan.nextLine();
-                return selectedTemplateQuestion;
-            } catch (Exception e) {
-                System.out.println("* Enter a valid option *");
+                return null;
             }
+            TemplateQuestion selectedTemplateQuestion = templateQuestions.get(selected);
+            scan.nextLine();
+            return selectedTemplateQuestion;
         }
     }
 
