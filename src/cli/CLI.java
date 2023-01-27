@@ -1,7 +1,6 @@
 package cli;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -128,7 +127,7 @@ public class CLI {
             clear();
             LocalDate today = LocalDate.now();
             String name = Auth.getLoggedUser().getName();
-            System.out.println("----- " + today + " :: " + name + " -----");
+            System.out.println("----- " + name + " :: " + today + " -----");
 
             Integer selectedOption = Menu.showOptions(scan, options);
 
@@ -159,12 +158,6 @@ public class CLI {
 
                 default:
                     break;
-            }
-            System.out.println("Do you wish to exit Easy Daily Review? ('y' or 'n')");
-
-            if (scan.nextLine().startsWith("y")) {
-                Auth.logout();
-                break;
             }
         }
     }
@@ -393,98 +386,105 @@ public class CLI {
     }
 
     private void customizeReviewTemplatePeriodMenu() {
-        clear();
-        System.out.println("----- Customize Review Template -----");
-        String[] options = { "Daily Review Templates", "Weekly Review Templates" };
-        Integer selectedOption = Menu.showOptions(scan, options);
-        if (selectedOption == null) {
-            scan.nextLine();
-            return;
-        }
-        switch (selectedOption) {
-            case 0:
-                TemplateReview selectedTemplateReview = selectDailyReviewTemplate();
+        while (true) {
+            clear();
+            System.out.println("----- Customize Review Template -----");
+            String[] options = { "Daily Review Templates", "Weekly Review Templates" };
+            Integer selectedOption = Menu.showOptions(scan, options);
+            if (selectedOption == null) {
                 scan.nextLine();
-                customizeReviewTemplate(selectedTemplateReview);
-                break;
-            case 1:
-                // TODO List weekly review templates for selection
-                break;
+                return;
+            }
+            switch (selectedOption) {
+                case 0:
+                    TemplateReview selectedTemplateReview = selectDailyReviewTemplate();
+                    scan.nextLine();
+                    customizeReviewTemplate(selectedTemplateReview);
+                    break;
+                case 1:
+                    // TODO List weekly review templates for selection
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
+            }
         }
     }
 
     private TemplateReview selectDailyReviewTemplate() {
         ListTemplateReviews listTemplateReviews = new ListTemplateReviews(CliModule.templateReviewRepository);
         List<TemplateReview> templateReviews = listTemplateReviews.exec();
+        while (true) {
 
-        clear();
-        System.out.println("----- Daily Review Templates -----");
+            clear();
+            System.out.println("----- Daily Review Templates -----");
 
-        if (templateReviews == null || templateReviews.isEmpty()) {
-            System.out.println("* No Templates Found! *");
-            System.out.println("(Press 'Enter' to return)");
-            scan.nextLine();
-            return null;
+            if (templateReviews == null || templateReviews.isEmpty()) {
+                System.out.println("* No Templates Found! *");
+                System.out.println("(Press 'Enter' to return)");
+                scan.nextLine();
+                return null;
+            }
+            String[] templateReviewDisplayNames = new String[templateReviews.size()];
+            for (int i = 0; i < templateReviews.size(); i++) {
+                TemplateReview tr = templateReviews.get(i);
+                templateReviewDisplayNames[i] = tr.getDisplayName() + " - Questions: "
+                        + tr.getTemplateQuestions().size();
+            }
+            Integer selectedOption = Menu.showOptions(scan, templateReviewDisplayNames);
+            if (selectedOption == null) {
+                scan.nextLine();
+                return null;
+            }
+            return templateReviews.get(selectedOption);
         }
-        String[] templateReviewDisplayNames = new String[templateReviews.size()];
-        for (int i = 0; i < templateReviews.size(); i++) {
-            TemplateReview tr = templateReviews.get(i);
-            templateReviewDisplayNames[i] = tr.getDisplayName() + " - Questions: " + tr.getTemplateQuestions().size();
-        }
-        Integer selectedOption = Menu.showOptions(scan, templateReviewDisplayNames);
-        if (selectedOption == null) {
-            scan.nextLine();
-            return null;
-        }
-        return templateReviews.get(selectedOption);
     }
 
     private void customizeReviewTemplate(TemplateReview template) {
-        clear();
-        System.out.println("----- Customize Template :: " + template.getDisplayName() + " -----");
-        String[] options = { "View details", "Add question", "Remove question", "Edit template name",
-                template.getPeriod().equals(Period.DAILY) ? "Change periodicity to WEEKLY"
-                        : "Change periodicity to DAILY" };
-        Integer selected = Menu.showOptions(scan, options);
-        if (selected == null) {
-            scan.nextLine();
-            return;
-        }
-        switch (selected) {
-            case 0:
+        while (true) {
+            clear();
+            System.out.println("----- Customize Template :: " + template.getDisplayName() + " -----");
+            String[] options = { "View details", "Add question", "Remove question", "Edit template name",
+                    template.getPeriod().equals(Period.DAILY) ? "Change periodicity to WEEKLY"
+                            : "Change periodicity to DAILY" };
+            Integer selected = Menu.showOptions(scan, options);
+            if (selected == null) {
                 scan.nextLine();
-                displayTemplateReviewDetails(template);
-                break;
-            case 1:
-                scan.nextLine();
-                addQuestionToTemplateReviewMenu(template);
                 return;
-            case 2:
-                scan.nextLine();
-                // TODO remove question from selected template
-                break;
-            case 3:
-                scan.nextLine();
-                System.out.println("Type a new title / name for the template: ");
-                String newName = scan.nextLine();
-                template.setDisplayName(newName);
-                break;
-            case 4:
-                scan.nextLine();
-                if (template.getPeriod().equals(Period.WEEKLY)) {
-                    template.setPeriod(Period.DAILY);
+            }
+            switch (selected) {
+                case 0:
+                    scan.nextLine();
+                    displayTemplateReviewDetails(template);
                     break;
-                }
-                template.setPeriod(Period.WEEKLY);
-                break;
+                case 1:
+                    scan.nextLine();
+                    addQuestionToTemplateReviewMenu(template);
+                    return;
+                case 2:
+                    scan.nextLine();
+                    // TODO remove question from selected template
+                    break;
+                case 3:
+                    scan.nextLine();
+                    System.out.println("Type a new title / name for the template: ");
+                    String newName = scan.nextLine();
+                    template.setDisplayName(newName);
+                    break;
+                case 4:
+                    scan.nextLine();
+                    if (template.getPeriod().equals(Period.WEEKLY)) {
+                        template.setPeriod(Period.DAILY);
+                        break;
+                    }
+                    template.setPeriod(Period.WEEKLY);
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
+            }
+            // TODO update template review use-case 'updateTemplateReview(TemplateReview t)'
         }
-        // TODO update template review use-case 'updateTemplateReview(TemplateReview t)'
     }
 
     private void displayTemplateReviewDetails(TemplateReview templateReview) {
@@ -503,35 +503,37 @@ public class CLI {
         }
         System.out.println("(Press 'Enter' to return)");
         scan.nextLine();
-
+        return;
     }
 
     private void addQuestionToTemplateReviewMenu(TemplateReview template) {
-        clear();
-        System.out.println("----- Add Question :: " + template.getDisplayName() + "-----");
-        Integer selected = Menu.showOptions(scan,
-                new String[] { "Existing Template Questions", "Create New Template Question" });
-        if (selected == null) {
-            scan.nextLine();
-            return;
-        }
-        switch (selected) {
-            case 0:
+        while (true) {
+            clear();
+            System.out.println("----- Add Question :: " + template.getDisplayName() + "-----");
+            Integer selected = Menu.showOptions(scan,
+                    new String[] { "Existing Template Questions", "Create New Template Question" });
+            if (selected == null) {
                 scan.nextLine();
-                addExistingQuestionToTemplateReview(template);
-                break;
-            case 1:
-                scan.nextLine();
-                TemplateQuestion createdTemplateQuestion = createNewTemplateQuestion();
-                if (createdTemplateQuestion == null)
+                return;
+            }
+            switch (selected) {
+                case 0:
+                    scan.nextLine();
+                    addExistingQuestionToTemplateReview(template);
                     break;
-                AddQuestionToTemplateReview addQuestionToTemplateReview = new AddQuestionToTemplateReview(
-                        CliModule.templateReviewRepository);
-                addQuestionToTemplateReview.exec(template, createdTemplateQuestion);
-                break;
+                case 1:
+                    scan.nextLine();
+                    TemplateQuestion createdTemplateQuestion = createNewTemplateQuestion();
+                    if (createdTemplateQuestion == null)
+                        break;
+                    AddQuestionToTemplateReview addQuestionToTemplateReview = new AddQuestionToTemplateReview(
+                            CliModule.templateReviewRepository);
+                    addQuestionToTemplateReview.exec(template, createdTemplateQuestion);
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
+            }
         }
     }
 

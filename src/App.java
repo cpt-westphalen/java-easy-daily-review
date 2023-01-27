@@ -9,17 +9,25 @@ public class App {
     public static CLI cli = new CLI(scanner);
 
     public static void main(String[] args) throws Exception {
-        cli.clear();
-        System.out.println("----- Easy Daily Review :::: author: @cpt-westphalen -----");
-        System.out.println("Press 'Enter' to start.");
-        scanner.nextLine();
-
         while (true) {
+            cli.clear();
+            System.out.println("----- Easy Daily Review :::: author: @cpt-westphalen -----");
+            System.out.println("Press 'Enter' to start.");
+            scanner.nextLine();
+
             try {
-                if (Auth.isAuthorized()) {
-                    cli.mainMenu();
-                } else {
-                    cli.authMenu();
+                while (true) {
+                    if (Auth.isAuthorized()) {
+                        cli.mainMenu();
+                        System.out.println("Do you wish to exit Easy Daily Review? ('y' / 'n')");
+                        if (scanner.nextLine().toLowerCase().startsWith("y"))
+                            Auth.logout();
+                    } else {
+                        cli.authMenu();
+                        if (Auth.isAuthorized() == false) {
+                            break;
+                        }
+                    }
                 }
             } catch (Exception e) {
                 scanner.nextLine();
@@ -31,6 +39,7 @@ public class App {
         // TODO Create own template review
         // // create template question
         // // add or remove question from review template
+        // // add "Create Template Review" option
 
     }
 }
