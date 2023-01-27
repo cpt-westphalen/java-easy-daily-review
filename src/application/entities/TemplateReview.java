@@ -12,12 +12,12 @@ public class TemplateReview {
     };
 
     public static TemplateQuestion wellbeingRateQuestion = new TemplateQuestion("1236d288-9b69-458e-8474-c58fcd35ad08",
-            Type.NUMBER, "How would you rate your well-being today?");
+            Type.NUMBER, "How would you rate your well-being today?", "Well-being Rating");
     public static TemplateQuestion productivityRateQuestion = new TemplateQuestion(
             "86f8f91a-17cb-4058-9dc2-5d439b3daa58", Type.NUMBER,
-            "How would you rate your productivity today?");
+            "How would you rate your productivity today?", "Productivity Rating");
     public static TemplateQuestion dayRateQuestion = new TemplateQuestion("36276627-b507-41ff-b9f0-8bc7c9709986",
-            Type.NUMBER, "How would you rate your day as a whole?");
+            Type.NUMBER, "How would you rate your day as a whole?", "Day Rating");
 
     private String id, name;
     private Period period;

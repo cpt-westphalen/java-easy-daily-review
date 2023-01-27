@@ -17,10 +17,9 @@ import application.entities.TemplateReview;
 import application.entities.User;
 import application.entities.TemplateQuestion.Type;
 import application.entities.TemplateReview.Period;
-import application.repositories.TemplateReviewRepository;
 import application.useCases.GetReviews;
+import application.useCases.GetTemplateQuestions;
 import application.useCases.ListTemplateReviews;
-import mocks.TextDbTemplateReviewRepository;
 import application.useCases.CreateNewReview;
 
 public class CLI {
@@ -415,12 +414,18 @@ public class CLI {
         Integer selected = Menu.showOptions(scan, options);
         switch (selected) {
             case 0:
+                scan.nextLine();
                 // TODO print template details
                 break;
             case 1:
+                scan.nextLine();
                 // TODO add question to selected template
+                GetTemplateQuestions getTemplateQuestions = new GetTemplateQuestions(
+                        CliModule.templateQuestionRepository);
+                printTemplateQuestions(getTemplateQuestions.exec());
                 break;
             case 2:
+                scan.nextLine();
                 // TODO remove question from selected template
                 break;
             case 3:
@@ -430,6 +435,7 @@ public class CLI {
                 template.setDisplayName(newName);
                 break;
             case 4:
+                scan.nextLine();
                 if (template.getPeriod().equals(Period.WEEKLY)) {
                     template.setPeriod(Period.DAILY);
                     break;
@@ -440,7 +446,15 @@ public class CLI {
             default:
                 break;
         }
-        // TODO update template review use-case
+        // TODO update template review use-case 'updateTemplateReview(TemplateReview t)'
+    }
+
+    private void printTemplateQuestions(List<TemplateQuestion> templateQuestions) {
+        for (TemplateQuestion tq : templateQuestions) {
+            String type = tq.getType().name();
+            String formattedType = type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase();
+            System.out.println(tq.getDisplayName() + " (" + formattedType + ")");
+        }
     }
 
     private void printReview(Review review) {

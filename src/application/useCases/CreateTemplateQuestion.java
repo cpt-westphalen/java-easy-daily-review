@@ -14,7 +14,8 @@ public class CreateTemplateQuestion {
         this.templateQuestionRepository = templateQuestionRepository;
     }
 
-    public TemplateQuestion exec(String id, Type type, String questionText) throws Exception {
+    public TemplateQuestion exec(String id, Type type, String questionText, String questionDisplayName)
+            throws Exception {
         if (type == null || questionText == null || questionText.isEmpty()) {
             throw new Exception("Template question must include a valid type and text.");
         }
@@ -22,7 +23,7 @@ public class CreateTemplateQuestion {
         if (id == null) {
             id = UUID.randomUUID().toString();
         }
-        TemplateQuestion newTemplateQuestion = new TemplateQuestion(id, type, questionText);
+        TemplateQuestion newTemplateQuestion = new TemplateQuestion(id, type, questionText, questionDisplayName);
 
         addOrUpdateTemplateQuestionToRepository(newTemplateQuestion);
 

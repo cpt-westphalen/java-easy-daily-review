@@ -130,12 +130,16 @@ public class TextDbTemplateQuestionRepository implements TemplateQuestionReposit
     }
 
     public TemplateQuestion makeTemplateQuestionFromFile(File file) {
-        String templateQuestionId, templateQuestionText;
+        String templateQuestionId, templateQuestionText, templateQuestionDisplayName = null;
         Type templateQuestionType;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
+                if (line.startsWith("n")) {
+                    templateQuestionDisplayName = line.substring(2);
+                    line = reader.readLine();
+                }
                 if (line.startsWith("i")) {
                     templateQuestionId = line.substring(2);
                     line = reader.readLine();
@@ -157,7 +161,7 @@ public class TextDbTemplateQuestionRepository implements TemplateQuestionReposit
                 }
                 templateQuestionText = line.substring(2);
                 TemplateQuestion templateQuestion = new TemplateQuestion(templateQuestionId, templateQuestionType,
-                        templateQuestionText);
+                        templateQuestionText, templateQuestionDisplayName);
                 return templateQuestion;
             }
         } catch (Exception e) {

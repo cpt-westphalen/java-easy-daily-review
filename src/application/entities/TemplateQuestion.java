@@ -11,11 +11,13 @@ public class TemplateQuestion {
     protected String id;
     protected Type type;
     protected String text;
+    protected String name;
 
-    public TemplateQuestion(String id, Type type, String text) {
+    public TemplateQuestion(String id, Type type, String text, String name) {
         this.id = id;
         this.type = type;
         this.text = text;
+        this.name = name;
     }
 
     public String getId() {
@@ -36,6 +38,14 @@ public class TemplateQuestion {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getDisplayName() {
+        return name;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.name = displayName;
     }
 
 }

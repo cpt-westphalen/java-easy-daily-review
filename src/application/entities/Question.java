@@ -9,6 +9,8 @@ public class Question {
     private String id;
     private Type type;
     private String text;
+    private String name;
+
     private Answer answer;
     private LocalDate updatedAt;
 
@@ -16,6 +18,7 @@ public class Question {
         this.id = templateQuestion.id;
         this.type = templateQuestion.type;
         this.text = templateQuestion.text;
+        this.name = templateQuestion.getDisplayName();
         this.updatedAt = updatedAt != null ? updatedAt : LocalDate.now();
         this.answer = answer != null ? answer : new Answer(templateQuestion.type, null);
     }
@@ -58,6 +61,14 @@ public class Question {
 
     public void setUpdatedAt(LocalDate date) {
         this.updatedAt = date;
+    }
+
+    public String getDisplayName() {
+        return name;
+    }
+
+    public void setDisplayName(String name) {
+        this.name = name;
     }
 
     @Override

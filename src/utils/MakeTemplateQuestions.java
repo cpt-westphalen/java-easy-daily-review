@@ -15,8 +15,13 @@ public class MakeTemplateQuestions {
             Type templateQuestionType;
             String templateQuestionText;
             String templateQuestionId;
+            String templateQuestionDisplayName = null;
 
             String line = fileScanner.nextLine();
+            if (line.startsWith("n")) {
+                templateQuestionDisplayName = line.substring(2);
+                line = fileScanner.nextLine();
+            }
             if (line.startsWith("i")) {
                 templateQuestionId = line.substring(2);
                 line = fileScanner.nextLine();
@@ -38,7 +43,7 @@ public class MakeTemplateQuestions {
             }
             templateQuestionText = line.substring(2);
             TemplateQuestion templateQuestion = new TemplateQuestion(templateQuestionId, templateQuestionType,
-                    templateQuestionText);
+                    templateQuestionText, templateQuestionDisplayName);
             templateQuestionsList.add(templateQuestion);
         }
         fileScanner.close();

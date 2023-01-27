@@ -99,7 +99,7 @@ public class TextDbReviewRepository implements ReviewRepository {
                     }
                 }
                 if (line.startsWith("questions")) {
-                    String id = null, text = null, answerText = null;
+                    String id = null, text = null, answerText = null, displayName = null;
                     Type type = null;
                     LocalDate updatedAt = null;
                     while ((line = reader.readLine()) != null) {
@@ -109,6 +109,8 @@ public class TextDbReviewRepository implements ReviewRepository {
                             String key = keyValuePair[0], value = keyValuePair[1];
 
                             switch (key.toLowerCase()) {
+                                case "name":
+                                    displayName = value;
                                 case "id":
                                     id = value;
                                     break;
@@ -134,7 +136,7 @@ public class TextDbReviewRepository implements ReviewRepository {
                             }
                         } else {
 
-                            TemplateQuestion questionModel = new TemplateQuestion(id, type, text);
+                            TemplateQuestion questionModel = new TemplateQuestion(id, type, text, displayName);
                             Answer answer = new Answer(type, answerText);
                             answer.setUpdatedAt(updatedAt);
                             Question question = new Question(questionModel, answer, updatedAt);
@@ -218,6 +220,8 @@ public class TextDbReviewRepository implements ReviewRepository {
             List<Question> questions = review.getQuestions();
             for (int i = 0; i < questions.size(); i++) {
                 Question question = questions.get(i);
+                writer.newLine();
+                writer.write("name: " + question.getDisplayName());
                 writer.newLine();
                 writer.write("id: " + question.getId());
                 writer.newLine();
