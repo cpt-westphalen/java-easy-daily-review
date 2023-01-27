@@ -9,11 +9,11 @@ public class Menu {
         for (int i = 0; i < options.length; i++) {
             System.out.println("(" + (i + 1) + ") " + options[i]);
         }
-        System.out.println("(" + (options.length + 1) + ") Go back");
+        System.out.println("(0) Go back");
         while (true) {
             try {
                 Integer option = scan.nextInt();
-                if (option == options.length + 1)
+                if (option == 0)
                     return null;
                 if (option >= 1 && option <= options.length) {
                     return option - 1;

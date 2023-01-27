@@ -1,6 +1,8 @@
 package mocks;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -65,11 +67,52 @@ public class TextDbTemplateReviewRepository implements TemplateReviewRepository 
     @Override
     public void add(TemplateReview templateReview) {
         templateReviews.putIfAbsent(templateReview.getId(), templateReview);
+        writeTemplateReviewToTextFile(templateReview);
     }
 
     @Override
     public void update(TemplateReview templateReview) {
         templateReviews.replace(templateReview.getId(), templateReview);
+        writeTemplateReviewToTextFile(templateReview);
+    }
+
+    public void writeTemplateReviewToTextFile(TemplateReview templateReview) {
+        String filename = templateReview.getId() + ".txt";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(
+                Path.of(TEMPLATE_REVIEW_DB_PATH.toString(), filename).toFile()))) {
+            writer.write("n " + templateReview.getDisplayName());
+            writer.newLine();
+            writer.write("i " + templateReview.getId());
+            writer.newLine();
+            writer.write(templateReview.getPeriod().name());
+            writer.newLine();
+            for (TemplateQuestion templateQuestion : templateReview.getTemplateQuestions()) {
+                writer.write("n " + templateQuestion.getDisplayName());
+                writer.newLine();
+                writer.write("i " + templateQuestion.getId());
+                writer.newLine();
+                String typeChar;
+                switch (templateQuestion.getType().name()) {
+                    case "TEXT":
+                        typeChar = "&";
+                        break;
+                    case "BOOLEAN":
+                        typeChar = "!";
+                        break;
+                    case "NUMBER":
+                        typeChar = "#";
+                        break;
+
+                    default:
+                        typeChar = "&";
+                        break;
+                }
+                writer.write(typeChar + " " + templateQuestion.getText());
+                writer.newLine();
+            }
+        } catch (Exception e) {
+            System.out.println("Error: could not write template review to file");
+        }
     }
 
     public List<TemplateReview> listTemplateReviewsFromTextFiles(Path folderURI) {

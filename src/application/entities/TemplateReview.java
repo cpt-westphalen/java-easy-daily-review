@@ -1,5 +1,6 @@
 package application.entities;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import application.entities.TemplateQuestion.Type;
@@ -23,32 +24,20 @@ public class TemplateReview {
     private Period period;
     private List<TemplateQuestion> templateQuestions;
 
+    public static List<TemplateQuestion> getDefaultTemplateQuestions() {
+        List<TemplateQuestion> defaultTemplateQuestions = new LinkedList<>();
+        defaultTemplateQuestions.add(productivityRateQuestion);
+        defaultTemplateQuestions.add(wellbeingRateQuestion);
+        defaultTemplateQuestions.add(dayRateQuestion);
+        return defaultTemplateQuestions;
+    }
+
     public TemplateReview(String id, Period period, List<TemplateQuestion> templateQuestions, String name) {
         this.id = id;
         this.period = period;
         this.templateQuestions = templateQuestions;
         this.name = name != null ? name : "Unnamed Template (" + id + ")";
 
-        boolean injectDayRate = true, injectWellbeingRate = true,
-                injectProductivityRate = true;
-
-        for (TemplateQuestion question : this.templateQuestions) {
-            if (question.getId().equals(productivityRateQuestion.getId())) {
-                injectProductivityRate = false;
-            }
-            if (question.getId().equals(wellbeingRateQuestion.getId())) {
-                injectWellbeingRate = false;
-            }
-            if (question.getId().equals(dayRateQuestion.getId())) {
-                injectDayRate = false;
-            }
-        }
-        if (injectProductivityRate)
-            this.templateQuestions.add(productivityRateQuestion);
-        if (injectWellbeingRate)
-            this.templateQuestions.add(wellbeingRateQuestion);
-        if (injectDayRate)
-            this.templateQuestions.add(dayRateQuestion);
     }
 
     public String getId() {
@@ -67,6 +56,15 @@ public class TemplateReview {
         return this.templateQuestions;
     }
 
+    public TemplateQuestion getTemplateQuestionById(String id) {
+        for (TemplateQuestion q : this.templateQuestions) {
+            if (q.getId().equals(id)) {
+                return q;
+            }
+        }
+        return null;
+    }
+
     public void setTemplateQuestions(List<TemplateQuestion> questions) {
         this.templateQuestions = questions;
     }
@@ -77,15 +75,6 @@ public class TemplateReview {
 
     public void removeQuestion(String id) {
         this.templateQuestions.removeIf(question -> question.getId().equals(id));
-    }
-
-    public TemplateQuestion getTemplateQuestionById(String id) {
-        for (TemplateQuestion q : this.templateQuestions) {
-            if (q.getId().equals(id)) {
-                return q;
-            }
-        }
-        return null;
     }
 
     public String getDisplayName() {

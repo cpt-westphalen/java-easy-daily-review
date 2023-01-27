@@ -19,6 +19,7 @@ import application.entities.TemplateReview.Period;
 import application.useCases.GetReviews;
 import application.useCases.GetTemplateQuestions;
 import application.useCases.ListTemplateReviews;
+import application.useCases.RemoveQuestionFromTemplateReview;
 import application.useCases.AddQuestionToTemplateReview;
 import application.useCases.CreateNewReview;
 import application.useCases.CreateTemplateQuestion;
@@ -183,37 +184,29 @@ public class CLI {
 
     private void registerNewReview(TemplateReview template) {
         clear();
-        System.out.println("----- " + LocalDate.now() + " -----");
+        System.out.println("----- New Review :: " + LocalDate.now() + " -----");
         System.out.println();
-        List<Question> questions = new LinkedList<Question>();
+
+        List<Question> reviewQuestions = new LinkedList<Question>();
+
+        // custom questions
         for (TemplateQuestion templateQuestion : template.getTemplateQuestions()) {
-            Question question = new Question(templateQuestion, null, null);
-            Answer answer = question.getAnswer();
-            System.out.println(question.getText());
-            if (question.getType().equals(Type.BOOLEAN)) {
-                System.out.println("(Type 'y' or 'n', 'Enter' to submit)");
-            }
-            if (question.getType().equals(Type.NUMBER)) {
-                System.out.println("(Type an integer between 0 and 100, 'Enter' to submit)");
-            }
-            if (question.getType().equals(Type.TEXT)) {
-                System.out.println("(Type any text or leave it blank, 'Enter' to submit)");
-            }
-            String answerText = scan.nextLine();
-            System.out.println();
-            System.out.println("--");
-            if (!answerText.isEmpty()) {
-                answer.setValue(answerText);
-                question.setAnswer(answer);
-            }
-            questions.add(question);
+            Question answeredQuestion = makeQuestionFromTemplateWithUserInputAnswer(templateQuestion);
+            reviewQuestions.add(answeredQuestion);
         }
+        // default questions
+        List<TemplateQuestion> defaultQuestions = TemplateReview.getDefaultTemplateQuestions();
+        for (TemplateQuestion templateQuestion : defaultQuestions) {
+            Question answeredQuestion = makeQuestionFromTemplateWithUserInputAnswer(templateQuestion);
+            reviewQuestions.add(answeredQuestion);
+        }
+
         CreateNewReview createNewReview = new CreateNewReview(CliModule.reviewRepository);
         Review review = createNewReview.exec(Auth.getLoggedUser().getId(), UUID.randomUUID().toString(),
                 template.getPeriod(),
-                LocalDate.now(), questions);
+                LocalDate.now(), reviewQuestions);
         System.out.println("Completed! Would you like to see your answers? ('y' or 'n')");
-        if (scan.nextLine().charAt(0) == 'n') {
+        if (scan.nextLine().toLowerCase().startsWith("n")) {
             return;
         }
         printReview(review);
@@ -221,85 +214,72 @@ public class CLI {
     }
 
     private void previousReviewsMenu() {
-        clear();
-        System.out.println("----- User Reviews -----");
-        Integer option = Menu.showOptions(scan,
-                new String[] { "Display recent reviews", "Search review by date", "Go back" });
-        if (option == null) {
-            scan.nextLine();
-            return;
-        }
-        switch (option) {
-            case 0:
+        while (true) {
+            clear();
+            System.out.println("----- User Reviews -----");
+            Integer option = Menu.showOptions(scan,
+                    new String[] { "Display recent reviews", "Search review by date" });
+            if (option == null) {
                 scan.nextLine();
-                displayRecentReviews();
-                break;
-            case 1:
-                scan.nextLine();
-                searchReviewByDate();
-                break;
-
-            case 2:
                 return;
+            }
+            switch (option) {
+                case 0:
+                    scan.nextLine();
+                    displayRecentReviews();
+                    break;
+                case 1:
+                    scan.nextLine();
+                    searchReviewByDate();
+                    break;
 
-            default:
-                break;
+                case 2:
+                    return;
+
+                default:
+                    break;
+            }
         }
     }
 
     private void displayRecentReviews() {
         GetReviews getReviews = new GetReviews(CliModule.reviewRepository);
         List<Review> userReviews;
-        clear();
-        System.out.println("----- User Reviews -----");
+        while (true) {
+            clear();
+            System.out.println("----- User Reviews -----");
 
-        try {
-            userReviews = getReviews.listAllFromLoggedUser();
+            try {
+                userReviews = getReviews.listRecentFromLoggedUser();
 
-            if (userReviews.size() == 0) {
-                System.out.println("* No Reviews Yet! *");
-                System.out.println("(Press 'Enter' to return)");
-                scan.nextLine();
-                return;
-            }
-            int displayNumber = 0;
-            if (userReviews.size() < 10) {
-                for (int i = userReviews.size() - 1; i >= 0; i--) {
-                    displayNumber++;
-                    Review review = userReviews.get(i);
-                    System.out.println(
-                            "(" + (displayNumber) + ") " + review.getDate() + " - Day rating: "
-                                    + review.getDayRate());
-                }
-            } else {
-                for (int i = userReviews.size() - 1; i >= userReviews.size() - 11; i--) {
-                    displayNumber++;
-                    Review review = userReviews.get(i);
-                    System.out.println(
-                            "(" + (displayNumber) + ") " + review.getDate() + " - Day rating: "
-                                    + review.getDayRate());
-                }
-            }
-
-            while (true) {
-                System.out.println("Enter the number to display the review, or 'q' to return");
-                try {
-                    Integer option = scan.nextInt();
+                if (userReviews.size() == 0) {
+                    System.out.println("* No Reviews Yet! *");
+                    System.out.println("(Press 'Enter' to return)");
                     scan.nextLine();
-                    if (option > 0 && option <= displayNumber) {
-                        Review selectedReview = userReviews.get(userReviews.size() - option);
-                        printReview(selectedReview);
-                        return;
-                    }
-                    System.out.println("* Enter a valid option *");
-                } catch (Exception e) {
                     return;
                 }
+
+                String[] displayOptions = new String[userReviews.size() <= 10 ? userReviews.size() : 10];
+
+                for (int i = 0; i < displayOptions.length; i++) {
+                    Review review = userReviews.get(userReviews.size() - i - 1);
+                    displayOptions[i] = review.getDate() + " - Day rating: "
+                            + review.getDayRate();
+                }
+                Integer selectedOption = Menu.showOptions(scan, displayOptions);
+
+                if (selectedOption == null) {
+                    scan.nextLine();
+                    return;
+                }
+
+                Review selectedReview = userReviews.get(userReviews.size() - selectedOption - 1);
+                printReview(selectedReview);
+            } catch (Exception e) {
+                System.out.println("You need to login first.");
+                return;
             }
 
-        } catch (Exception e) {
-            System.out.println("You need to login first.");
-            return;
         }
     }
 
@@ -398,7 +378,8 @@ public class CLI {
             switch (selectedOption) {
                 case 0:
                     TemplateReview selectedTemplateReview = selectDailyReviewTemplate();
-                    scan.nextLine();
+                    if (selectedTemplateReview == null)
+                        break;
                     customizeReviewTemplate(selectedTemplateReview);
                     break;
                 case 1:
@@ -464,6 +445,7 @@ public class CLI {
                 case 2:
                     scan.nextLine();
                     // TODO remove question from selected template
+                    removeQuestionFromTemplateReviewMenu(template);
                     break;
                 case 3:
                     scan.nextLine();
@@ -628,20 +610,22 @@ public class CLI {
     }
 
     private TemplateQuestion selectTemplateQuestionFromList(List<TemplateQuestion> templateQuestions) {
-        if (templateQuestions.isEmpty()) {
-            System.out.println("* This template uses all available questions! *");
-            System.out.println("(Press 'Enter' to return)");
-            scan.nextLine();
-            return null;
-        }
-        String[] options = new String[templateQuestions.size()];
-        for (int i = 0; i < templateQuestions.size(); i++) {
-            TemplateQuestion tq = templateQuestions.get(i);
-            String type = tq.getType().name();
-            String formattedType = type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase();
-            options[i] = tq.getDisplayName() + " (" + formattedType + ")";
-        }
+        clear();
         while (true) {
+            System.out.println("----- Select Template Question to Add -----");
+            if (templateQuestions.isEmpty()) {
+                System.out.println("* This template uses all available questions! *");
+                System.out.println("(Press 'Enter' to return)");
+                scan.nextLine();
+                return null;
+            }
+            String[] options = new String[templateQuestions.size()];
+            for (int i = 0; i < templateQuestions.size(); i++) {
+                TemplateQuestion tq = templateQuestions.get(i);
+                String type = tq.getType().name();
+                String formattedType = type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase();
+                options[i] = tq.getDisplayName() + " (" + formattedType + ")";
+            }
             Integer selected = Menu.showOptions(scan, options);
             if (selected == null) {
                 scan.nextLine();
@@ -650,6 +634,36 @@ public class CLI {
             TemplateQuestion selectedTemplateQuestion = templateQuestions.get(selected);
             scan.nextLine();
             return selectedTemplateQuestion;
+        }
+    }
+
+    private void removeQuestionFromTemplateReviewMenu(TemplateReview templateReview) {
+        while (true) {
+            clear();
+            System.out.println("----- Remove Question From Template -----");
+
+            List<TemplateQuestion> questionsFromTemplateReview = templateReview.getTemplateQuestions();
+
+            String[] options = new String[questionsFromTemplateReview.size()];
+            for (int i = 0; i < options.length; i++) {
+                TemplateQuestion question = questionsFromTemplateReview.get(i);
+                options[i] = question.getDisplayName() + " (" + question.getType() + ")";
+            }
+
+            Integer selectedOption = Menu.showOptions(scan, options);
+            if (selectedOption == null) {
+                return;
+            }
+            TemplateQuestion selectedTemplateQuestion = questionsFromTemplateReview.get(selectedOption);
+            RemoveQuestionFromTemplateReview removeQuestionFromTemplateReview = new RemoveQuestionFromTemplateReview(
+                    CliModule.templateReviewRepository);
+            try {
+                removeQuestionFromTemplateReview.exec(selectedTemplateQuestion.getId(), templateReview);
+            } catch (Exception e) {
+                System.out.println("* Error: " + e.getMessage() + " *");
+                System.out.println("(Press 'Enter' to try again)");
+                scan.nextLine();
+            }
         }
     }
 
@@ -670,5 +684,32 @@ public class CLI {
             System.out.println(answer != null ? ("\tR: " + answer) : "\t* No answer provided *");
         }
         System.out.println("\n------------\n");
+        System.out.println();
+        System.out.println("(Press 'Enter' to return)");
+        scan.nextLine();
+    }
+
+    private Question makeQuestionFromTemplateWithUserInputAnswer(TemplateQuestion templateQuestion) {
+        System.out.println(templateQuestion.getText());
+        Type questionType = templateQuestion.getType();
+        if (questionType.equals(Type.BOOLEAN)) {
+            System.out.println("(Type 'y' or 'n', 'Enter' to submit)");
+        }
+        if (questionType.equals(Type.NUMBER)) {
+            System.out.println("(Type an integer between 0 and 100, 'Enter' to submit)");
+        }
+        if (questionType.equals(Type.TEXT)) {
+            System.out.println("(Type any text or leave it blank, 'Enter' to submit)");
+        }
+        String answerText = scan.nextLine();
+        Question question = new Question(templateQuestion, null, null);
+        Answer answer = question.getAnswer();
+        if (!answerText.isEmpty()) {
+            answer.setValue(answerText);
+            question.setAnswer(answer);
+        }
+        System.out.println();
+        System.out.println("--");
+        return question;
     }
 }

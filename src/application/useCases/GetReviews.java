@@ -2,6 +2,7 @@ package application.useCases;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import application.Auth;
 import application.entities.Review;
@@ -19,12 +20,24 @@ public class GetReviews {
         return reviewRepository.getManyByAuthorId(authorId);
     }
 
+    public List<Review> listRecentFromLoggedUser() throws Exception {
+        String authorId = Auth.getLoggedUser().getId();
+        List<Review> allReviews = reviewRepository.getManyByAuthorId(authorId);
+        List<Review> recentReviews = allReviews.stream()
+                .filter(review -> review.getDate().isAfter(LocalDate.now().minusDays(10))).collect(Collectors.toList());
+        recentReviews.sort((a, b) -> a.getDate().isAfter(b.getDate()) ? 1 : -1);
+        return recentReviews;
+    }
+
     public boolean hasReviewedToday() {
         String authorId = Auth.getLoggedUser().getId();
         List<Review> reviewsList = reviewRepository.getManyByAuthorId(authorId);
         if (reviewsList != null && reviewsList.size() > 0) {
-            Review lastReview = reviewsList.get(reviewsList.size() - 1);
-            return lastReview.getDate().equals(LocalDate.now());
+            for (Review review : reviewsList) {
+                if (review.getDate().equals(LocalDate.now())) {
+                    return true;
+                }
+            }
         }
         return false;
     }
