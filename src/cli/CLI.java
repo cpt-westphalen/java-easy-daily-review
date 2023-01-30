@@ -24,6 +24,7 @@ import application.useCases.UpdateTemplateReview;
 import application.useCases.AddQuestionToTemplateReview;
 import application.useCases.CreateNewReview;
 import application.useCases.CreateTemplateQuestion;
+import application.useCases.CreateTemplateReview;
 
 public class CLI {
 
@@ -348,7 +349,7 @@ public class CLI {
     private void settingsMenu() {
         clear();
         System.out.println("----- Settings -----");
-        String[] options = { "Customize Review template" };
+        String[] options = { "Customize Review Template", "Create new Review Template" };
         Integer selectedOption = Menu.showOptions(scan, options);
         if (selectedOption == null) {
             scan.nextLine();
@@ -358,19 +359,23 @@ public class CLI {
             case 0:
                 // Customize Review Template
                 scan.nextLine();
-                customizeReviewTemplatePeriodMenu();
+                customizeTemplateReviewSelectPeriodMenu();
                 break;
 
+            case 1:
+                // Create Template Review
+                scan.nextLine();
+                createNewTemplateReview();
             default:
                 break;
         }
     }
 
-    private void customizeReviewTemplatePeriodMenu() {
+    private void customizeTemplateReviewSelectPeriodMenu() {
         while (true) {
             clear();
-            System.out.println("----- Customize Review Template -----");
-            String[] options = { "Daily Review Templates", "Weekly Review Templates" };
+            System.out.println("----- Customize Template -----");
+            String[] options = { "Daily Templates", "Weekly Templates" };
             Integer selectedOption = Menu.showOptions(scan, options);
             if (selectedOption == null) {
                 scan.nextLine();
@@ -669,6 +674,77 @@ public class CLI {
             }
         }
     }
+
+    private void createNewTemplateReview() {
+        TemplateReview newTemplateReview = null;
+        String name = null;
+        Period period = null;
+        List<TemplateQuestion> templateQuestions = new LinkedList<>();
+        GetTemplateQuestions getTemplateQuestions = new GetTemplateQuestions(CliModule.templateQuestionRepository);
+        List<TemplateQuestion> allTemplateQuestions = getTemplateQuestions.exec();
+        while (true) {
+            clear();
+            System.out.println("----- New Review Template -----");
+            if (name == null) {
+                System.out.println("Type a display name for the template: ");
+                System.out.println("(Press 'Enter' to send)");
+                name = scan.nextLine().trim();
+                System.out.println();
+            }
+            if (period == null) {
+                Period[] periods = { Period.DAILY, Period.WEEKLY };
+                Integer selectedOption = Menu.showOptions(scan, new String[] { "Daily", "Weekly" });
+                if (selectedOption == null) {
+                    scan.nextLine();
+                    return;
+                }
+                period = periods[selectedOption];
+                System.out.println();
+            }
+
+            // TODO turn this into a fork: select existing questions / create new question
+            Integer selectedOption = -1;
+
+            while (selectedOption != null) {
+                clear();
+                System.out.println("----- New Review Template :: Select Questions to Include -----");
+                String[] questionNames = new String[allTemplateQuestions.size()];
+                for (int i = 0; i < questionNames.length; i++) {
+                    TemplateQuestion nextQuestion = allTemplateQuestions.get(i);
+                    if (templateQuestions.contains(nextQuestion)) {
+                        questionNames[i] = nextQuestion.getDisplayName() + " (Included!)";
+                    } else {
+                        questionNames[i] = nextQuestion.getDisplayName();
+                    }
+                }
+                selectedOption = Menu.showOptions(scan, questionNames);
+                if (selectedOption == null) {
+                    scan.nextLine();
+                    break;
+                }
+                scan.nextLine();
+                templateQuestions.add(allTemplateQuestions.get(selectedOption));
+            }
+
+            if (templateQuestions.isEmpty()) {
+                scan.nextLine();
+                return;
+            }
+
+            CreateTemplateReview createTemplateReview = new CreateTemplateReview(
+                    CliModule.templateReviewRepository);
+            try {
+                newTemplateReview = createTemplateReview.exec(name, period, templateQuestions);
+                System.out.println("* Template Created Sucessfully! *");
+                System.out.println("(Press 'Enter' to return)");
+                scan.nextLine();
+                return;
+            } catch (Exception e) {
+                System.out.println("* " + e.getMessage() + " *");
+            }
+
+        }
+    };
 
     private void printReview(Review review) {
         clear();
