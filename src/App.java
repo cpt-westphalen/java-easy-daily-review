@@ -36,7 +36,6 @@ public class App {
             }
         }
 
-        // TODO Create Auth as Use-Cases
         // TODO Delete Template Review
         // TODO View week rates: Highest, lowest, average
         // TODO Compare answers from different reviews

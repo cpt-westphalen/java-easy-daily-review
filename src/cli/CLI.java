@@ -20,6 +20,7 @@ import application.useCases.GetReviews;
 import application.useCases.GetTemplateQuestions;
 import application.useCases.ListTemplateReviews;
 import application.useCases.LoginUser;
+import application.useCases.RegisterNewUser;
 import application.useCases.RemoveQuestionFromTemplateReview;
 import application.useCases.UpdateTemplateReview;
 import application.useCases.AddQuestionToTemplateReview;
@@ -74,9 +75,11 @@ public class CLI {
             LoginUser loginUser = new LoginUser(CliModule.userRepository);
             try {
                 loginUser.exec(name, pin);
+                System.out.println();
                 System.out.println("* Login was successfull! *");
                 Thread.sleep(1000);
             } catch (Exception e) {
+                System.out.println();
                 System.out.println("* Error: " + e.getMessage() + " *");
                 System.out.println("(Press 'Enter' to try again; type '0' to go back)");
                 if (scan.nextLine().startsWith("0")) {
@@ -88,38 +91,33 @@ public class CLI {
     }
 
     private void registerUser() {
-        clear();
-        System.out.println("----- Register -----");
-        String login;
-        Integer pin;
+        String login, pin;
+        RegisterNewUser registerNewUser = new RegisterNewUser(CliModule.userRepository);
 
-        System.out.println("Name: ");
-        login = scan.nextLine();
-        do {
+        while (true) {
+            clear();
+            System.out.println("----- Register -----");
+            System.out.println("Name: ");
+            login = scan.nextLine();
             System.out.println();
             System.out.println("Pin (numbers only): ");
+            pin = scan.nextLine();
             try {
-                pin = scan.nextInt();
-                break;
+                registerNewUser.exec(login, pin);
+                System.out.println();
+                System.out.println("* User created! Please login *");
+                Thread.sleep(1500);
+                return;
             } catch (Exception e) {
-                System.out.println("* Enter only numbers *");
+                System.out.println();
+                System.out.println("* Error: " + e.getMessage() + " *");
+                System.out.println("(Press 'Enter' to try again; or type '0' to return)");
+                if (scan.nextLine().startsWith("0")) {
+                    return;
+                }
             }
-
-        } while (true);
-
-        clear();
-
-        String id = UUID.randomUUID().toString();
-        User user = new User(id, login, pin);
-        CliModule.userRepository.add(user);
-
-        List<User> users = CliModule.userRepository.getAll();
-
-        System.out.println("User list: ");
-        for (User u : users) {
-            System.out.println("- " + u.getName());
         }
-        System.out.println();
+
     }
 
     public void mainMenu() {

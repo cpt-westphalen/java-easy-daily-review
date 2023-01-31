@@ -81,17 +81,30 @@ public class TextDbUserRepository implements UserRepository {
     @Override
     public void add(User user) {
         this.users.put(user.getId(), user);
+        writeUserToTextFile(user);
+    }
+
+    @Override
+    public void removeById(String id) {
+        this.users.remove(id);
+        List<User> users = getAll();
+        try (BufferedWriter userFileWriter = new BufferedWriter(new FileWriter(USER_DB_PATH.toFile()))) {
+            userFileWriter.write("");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        for (User user : users) {
+            writeUserToTextFile(user);
+        }
+    }
+
+    private void writeUserToTextFile(User user) {
         try (BufferedWriter userFileWriter = new BufferedWriter(new FileWriter(USER_DB_PATH.toFile(), true))) {
             userFileWriter.newLine();
             userFileWriter.write(user.getId() + ":" + user.getName() + ":" + user.getPin());
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-    }
-
-    @Override
-    public void removeById(String id) {
-        this.users.remove(id);
     }
 
 }
