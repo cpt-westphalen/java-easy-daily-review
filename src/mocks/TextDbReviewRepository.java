@@ -174,11 +174,11 @@ public class TextDbReviewRepository implements ReviewRepository {
 
     @Override
     public void add(Review review) {
-        List<Review> reviewListFromAuthor = getManyByAuthorId(review.getAuthorId());
-        Review lastReview = reviewListFromAuthor.get(reviewListFromAuthor.size() - 1);
-        if (lastReview.getDate().equals(review.getDate())) {
-            removeById(lastReview.getId());
-        }
+        getManyByAuthorId(review.getAuthorId()).stream().forEach(r -> {
+            if (r.getDate().equals(review.getDate())) {
+                removeById(r.getId());
+            }
+        });
         this.reviews.put(review.getId(), review);
         writeToTextFile(review);
     }
