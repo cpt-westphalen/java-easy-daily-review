@@ -269,9 +269,8 @@ public class CLI {
                             + review.getDayRate();
                 }
                 Integer selectedOption = Menu.showOptions(scan, displayOptions);
-
+                scan.nextLine();
                 if (selectedOption == null) {
-                    scan.nextLine();
                     return;
                 }
 
@@ -384,8 +383,9 @@ public class CLI {
             switch (selectedOption) {
                 case 0:
                     TemplateReview selectedTemplateReview = selectDailyReviewTemplate();
-                    if (selectedTemplateReview == null)
+                    if (selectedTemplateReview == null) {
                         break;
+                    }
                     customizeReviewTemplate(selectedTemplateReview);
                     break;
                 case 1:
@@ -497,9 +497,11 @@ public class CLI {
     }
 
     private void addQuestionToTemplateReviewMenu(TemplateReview template) {
+        AddQuestionToTemplateReview addQuestionToTemplateReview = new AddQuestionToTemplateReview(
+                CliModule.templateReviewRepository);
         while (true) {
             clear();
-            System.out.println("----- Add Question :: " + template.getDisplayName() + "-----");
+            System.out.println("----- Add Question :: " + template.getDisplayName() + " -----");
             Integer selected = Menu.showOptions(scan,
                     new String[] { "Existing Template Questions", "Create New Template Question" });
             if (selected == null) {
@@ -516,8 +518,6 @@ public class CLI {
                     TemplateQuestion createdTemplateQuestion = createNewTemplateQuestion();
                     if (createdTemplateQuestion == null)
                         break;
-                    AddQuestionToTemplateReview addQuestionToTemplateReview = new AddQuestionToTemplateReview(
-                            CliModule.templateReviewRepository);
                     addQuestionToTemplateReview.exec(template, createdTemplateQuestion);
                     break;
 
@@ -528,39 +528,43 @@ public class CLI {
     }
 
     private void addExistingQuestionToTemplateReview(TemplateReview template) {
-
         GetTemplateQuestions getTemplateQuestions = new GetTemplateQuestions(
                 CliModule.templateQuestionRepository);
-        List<TemplateQuestion> allTemplateQuestions = getTemplateQuestions.exec();
-
-        List<TemplateQuestion> templateQuestionsOnTemplateReview = template.getTemplateQuestions();
-
-        List<TemplateQuestion> filteredTemplateQuestions = allTemplateQuestions.stream().filter(tq -> {
-            for (TemplateQuestion existingTemplateQuestion : templateQuestionsOnTemplateReview) {
-                if (existingTemplateQuestion.getId().equals(tq.getId())) {
-                    return false;
-                }
-            }
-            return true;
-        }).collect(Collectors.toList());
-
-        TemplateQuestion selectedTemplateQuestion = selectTemplateQuestionFromList(filteredTemplateQuestions);
-
-        if (selectedTemplateQuestion == null)
-            return;
 
         AddQuestionToTemplateReview addQuestionToTemplateReview = new AddQuestionToTemplateReview(
                 CliModule.templateReviewRepository);
-        TemplateReview updatedTemplateReview = addQuestionToTemplateReview.exec(template,
-                selectedTemplateQuestion);
 
-        if (updatedTemplateReview == null) {
-            System.out.println("* This question is already on the Template *");
+        while (true) {
+            List<TemplateQuestion> allTemplateQuestions = getTemplateQuestions.exec();
+
+            List<TemplateQuestion> templateQuestionsOnTemplateReview = template.getTemplateQuestions();
+
+            List<TemplateQuestion> filteredTemplateQuestions = allTemplateQuestions.stream().filter(tq -> {
+                for (TemplateQuestion existingTemplateQuestion : templateQuestionsOnTemplateReview) {
+                    if (existingTemplateQuestion.getId().equals(tq.getId())) {
+                        return false;
+                    }
+                }
+                return true;
+            }).collect(Collectors.toList());
+
+            TemplateQuestion selectedTemplateQuestion = selectTemplateQuestionFromList(filteredTemplateQuestions);
+
+            if (selectedTemplateQuestion == null)
+                return;
+
+            TemplateReview updatedTemplateReview = addQuestionToTemplateReview.exec(template,
+                    selectedTemplateQuestion);
+
+            if (updatedTemplateReview == null) {
+                System.out.println("* This question is already on the Template *");
+            }
+
+            System.out.println();
+            System.out.println("* Template Review updated! *");
+            System.out.println("(Press 'Enter' to return)");
+            scan.nextLine();
         }
-
-        System.out.println("[ Template Review updated! ]");
-        System.out.println("(Press 'Enter' to return)");
-        scan.nextLine();
     }
 
     private TemplateQuestion createNewTemplateQuestion() {
@@ -679,9 +683,10 @@ public class CLI {
         TemplateReview newTemplateReview = null;
         String name = null;
         Period period = null;
-        List<TemplateQuestion> templateQuestions = new LinkedList<>();
-        GetTemplateQuestions getTemplateQuestions = new GetTemplateQuestions(CliModule.templateQuestionRepository);
-        List<TemplateQuestion> allTemplateQuestions = getTemplateQuestions.exec();
+        List<TemplateQuestion> selectedTemplateQuestions = new LinkedList<>();
+        // GetTemplateQuestions getTemplateQuestions = new
+        // GetTemplateQuestions(CliModule.templateQuestionRepository);
+        // List<TemplateQuestion> allTemplateQuestions = getTemplateQuestions.exec();
         while (true) {
             clear();
             System.out.println("----- New Review Template -----");
@@ -701,47 +706,58 @@ public class CLI {
                 period = periods[selectedOption];
                 System.out.println();
             }
-
-            // TODO turn this into a fork: select existing questions / create new question
-            Integer selectedOption = -1;
-
-            while (selectedOption != null) {
-                clear();
-                System.out.println("----- New Review Template :: Select Questions to Include -----");
-                String[] questionNames = new String[allTemplateQuestions.size()];
-                for (int i = 0; i < questionNames.length; i++) {
-                    TemplateQuestion nextQuestion = allTemplateQuestions.get(i);
-                    if (templateQuestions.contains(nextQuestion)) {
-                        questionNames[i] = nextQuestion.getDisplayName() + " (Included!)";
-                    } else {
-                        questionNames[i] = nextQuestion.getDisplayName();
-                    }
-                }
-                selectedOption = Menu.showOptions(scan, questionNames);
-                if (selectedOption == null) {
+            if (newTemplateReview == null) {
+                CreateTemplateReview createTemplateReview = new CreateTemplateReview(
+                        CliModule.templateReviewRepository);
+                try {
+                    newTemplateReview = createTemplateReview.exec(name, period, selectedTemplateQuestions);
+                } catch (Exception e) {
+                    System.out.println("* Error: " + e.getMessage() + " *");
+                    System.out.println("(Press 'Enter' to return)");
                     scan.nextLine();
-                    break;
+                    return;
                 }
-                scan.nextLine();
-                templateQuestions.add(allTemplateQuestions.get(selectedOption));
             }
 
-            if (templateQuestions.isEmpty()) {
-                scan.nextLine();
-                return;
-            }
+            addQuestionToTemplateReviewMenu(newTemplateReview);
 
-            CreateTemplateReview createTemplateReview = new CreateTemplateReview(
-                    CliModule.templateReviewRepository);
-            try {
-                newTemplateReview = createTemplateReview.exec(name, period, templateQuestions);
+            if (!selectedTemplateQuestions.isEmpty()) {
                 System.out.println("* Template Created Sucessfully! *");
                 System.out.println("(Press 'Enter' to return)");
                 scan.nextLine();
                 return;
-            } catch (Exception e) {
-                System.out.println("* " + e.getMessage() + " *");
             }
+
+            // TODO turn this into a fork: select existing questions / create new question
+
+            // Integer selectedOption = -1;
+
+            // while (selectedOption != null) {
+            // clear();
+            // System.out.println("----- New Review Template :: Select Questions to Include
+            // -----");
+            // String[] questionNames = new String[allTemplateQuestions.size()];
+            // for (int i = 0; i < questionNames.length; i++) {
+            // TemplateQuestion nextQuestion = allTemplateQuestions.get(i);
+            // if (templateQuestions.contains(nextQuestion)) {
+            // questionNames[i] = nextQuestion.getDisplayName() + " (Included!)";
+            // } else {
+            // questionNames[i] = nextQuestion.getDisplayName();
+            // }
+            // }
+            // selectedOption = Menu.showOptions(scan, questionNames);
+            // if (selectedOption == null) {
+            // scan.nextLine();
+            // break;
+            // }
+            // scan.nextLine();
+            // templateQuestions.add(allTemplateQuestions.get(selectedOption));
+            // }
+
+            // if (selectedTemplateQuestions.isEmpty()) {
+            // scan.nextLine();
+            // return;
+            // }
 
         }
     };

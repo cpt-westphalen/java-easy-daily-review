@@ -2,6 +2,7 @@ package application.entities;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import application.entities.TemplateQuestion.Type;
 
@@ -33,7 +34,7 @@ public class TemplateReview {
     }
 
     public TemplateReview(String id, Period period, List<TemplateQuestion> templateQuestions, String name) {
-        this.id = id;
+        this.id = id == null ? UUID.randomUUID().toString() : id;
         this.period = period;
         this.templateQuestions = templateQuestions;
         this.name = name != null ? name : "Unnamed Template (" + id + ")";

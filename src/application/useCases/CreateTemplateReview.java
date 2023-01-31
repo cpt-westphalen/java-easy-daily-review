@@ -20,8 +20,8 @@ public class CreateTemplateReview {
         if (period == null) {
             throw new Exception("A Template Review's periodicity can't be null.");
         }
-        if (templateQuestionsList == null || templateQuestionsList.size() == 0) {
-            throw new Exception("A Template Review's question list needs at least one question.");
+        if (templateQuestionsList == null) {
+            throw new Exception("A Template Review's question list can't be null.");
         }
 
         String id = UUID.randomUUID().toString();

@@ -36,10 +36,11 @@ public class App {
             }
         }
 
-        // TODO Create own template review
-        // // create template question
-        // // add or remove question from review template
-        // // add "Create Template Review" option
+        // TODO Clean up app from "weekly" review option. This is easy-DAILY-review.
+        // TODO Fix overwriting review keeping old review in-memory
+        // TODO Delete Template Review
+        // TODO View week rates: Highest, lowest, average
+        // TODO Compare answers from different reviews
 
     }
 }
