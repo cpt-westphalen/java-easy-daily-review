@@ -19,6 +19,7 @@ import application.entities.TemplateQuestion.Type;
 import application.useCases.GetReviews;
 import application.useCases.GetTemplateQuestions;
 import application.useCases.ListTemplateReviews;
+import application.useCases.LoginUser;
 import application.useCases.RemoveQuestionFromTemplateReview;
 import application.useCases.UpdateTemplateReview;
 import application.useCases.AddQuestionToTemplateReview;
@@ -40,22 +41,24 @@ public class CLI {
     }
 
     public void authMenu() {
-        clear();
-        System.out.println("----- Authentication -----");
-        Integer option = Menu.showOptions(scan, new String[] { "Register new user", "Login" });
-        if (option == null) {
-            scan.nextLine();
-            return;
-        }
-        switch (option) {
-            case 0:
+        while (!Auth.isAuthorized()) {
+            clear();
+            System.out.println("----- Authentication -----");
+            Integer option = Menu.showOptions(scan, new String[] { "Register new user", "Login" });
+            if (option == null) {
                 scan.nextLine();
-                registerUser();
-                break;
-            case 1:
-                scan.nextLine();
-                loginUser();
-                break;
+                return;
+            }
+            switch (option) {
+                case 0:
+                    scan.nextLine();
+                    registerUser();
+                    break;
+                case 1:
+                    scan.nextLine();
+                    loginUser();
+                    break;
+            }
         }
     }
 
@@ -68,22 +71,20 @@ public class CLI {
             name = scan.nextLine();
             System.out.println("Pin: ");
             pin = scan.nextLine();
-            clear();
-            User user = CliModule.userRepository.findByName(name);
-            if (user == null) {
-                System.out.println("*Error: User not found*");
-                System.out.println();
-                authMenu();
-                return;
-            }
-            if (!Auth.login(user, Integer.valueOf(pin))) {
-                System.out.println("*Error: Incorrect Pin*");
-                System.out.println();
-                authMenu();
-                return;
+            LoginUser loginUser = new LoginUser(CliModule.userRepository);
+            try {
+                loginUser.exec(name, pin);
+                System.out.println("* Login was successfull! *");
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                System.out.println("* Error: " + e.getMessage() + " *");
+                System.out.println("(Press 'Enter' to try again; type '0' to go back)");
+                if (scan.nextLine().startsWith("0")) {
+                    return;
+                }
+
             }
         }
-        System.out.println("Login was successfull!");
     }
 
     private void registerUser() {

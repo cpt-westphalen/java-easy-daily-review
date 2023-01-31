@@ -36,7 +36,6 @@ public class App {
             }
         }
 
-        // TODO Fix overwriting review keeping old review in-memory
         // TODO Create Auth as Use-Cases
         // TODO Delete Template Review
         // TODO View week rates: Highest, lowest, average
