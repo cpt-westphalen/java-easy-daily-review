@@ -13,7 +13,6 @@ import application.entities.Question;
 import application.entities.Review;
 import application.entities.TemplateQuestion;
 import application.entities.TemplateReview;
-import application.entities.User;
 import application.entities.TemplateQuestion.Type;
 
 import application.useCases.GetReviews;
