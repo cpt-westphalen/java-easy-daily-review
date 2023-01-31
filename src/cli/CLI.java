@@ -15,7 +15,7 @@ import application.entities.TemplateQuestion;
 import application.entities.TemplateReview;
 import application.entities.User;
 import application.entities.TemplateQuestion.Type;
-import application.entities.TemplateReview.Period;
+
 import application.useCases.GetReviews;
 import application.useCases.GetTemplateQuestions;
 import application.useCases.ListTemplateReviews;
@@ -205,7 +205,6 @@ public class CLI {
 
         CreateNewReview createNewReview = new CreateNewReview(CliModule.reviewRepository);
         Review review = createNewReview.exec(Auth.getLoggedUser().getId(), UUID.randomUUID().toString(),
-                template.getPeriod(),
                 LocalDate.now(), reviewQuestions);
         System.out.println("Completed! Would you like to see your answers? ('y' or 'n')");
         if (scan.nextLine().toLowerCase().startsWith("n")) {
@@ -358,7 +357,11 @@ public class CLI {
             case 0:
                 // Customize Review Template
                 scan.nextLine();
-                customizeTemplateReviewSelectPeriodMenu();
+                TemplateReview selectedTemplateReview = selectDailyReviewTemplate();
+                if (selectedTemplateReview == null) {
+                    break;
+                }
+                customizeReviewTemplate(selectedTemplateReview);
                 break;
 
             case 1:
@@ -367,34 +370,6 @@ public class CLI {
                 createNewTemplateReview();
             default:
                 break;
-        }
-    }
-
-    private void customizeTemplateReviewSelectPeriodMenu() {
-        while (true) {
-            clear();
-            System.out.println("----- Customize Template -----");
-            String[] options = { "Daily Templates", "Weekly Templates" };
-            Integer selectedOption = Menu.showOptions(scan, options);
-            if (selectedOption == null) {
-                scan.nextLine();
-                return;
-            }
-            switch (selectedOption) {
-                case 0:
-                    TemplateReview selectedTemplateReview = selectDailyReviewTemplate();
-                    if (selectedTemplateReview == null) {
-                        break;
-                    }
-                    customizeReviewTemplate(selectedTemplateReview);
-                    break;
-                case 1:
-                    // TODO List weekly review templates for selection
-                    break;
-
-                default:
-                    break;
-            }
         }
     }
 
@@ -431,9 +406,7 @@ public class CLI {
         while (true) {
             clear();
             System.out.println("----- Customize Template :: " + template.getDisplayName() + " -----");
-            String[] options = { "View details", "Add question", "Remove question", "Edit template name",
-                    template.getPeriod().equals(Period.DAILY) ? "Change periodicity to WEEKLY"
-                            : "Change periodicity to DAILY" };
+            String[] options = { "View details", "Add question", "Remove question", "Edit template name" };
             Integer selected = Menu.showOptions(scan, options);
             if (selected == null) {
                 scan.nextLine();
@@ -460,16 +433,6 @@ public class CLI {
                     template.setDisplayName(newName);
                     updateTemplateReview.exec(template);
                     break;
-                case 4:
-                    scan.nextLine();
-                    if (template.getPeriod().equals(Period.WEEKLY)) {
-                        template.setPeriod(Period.DAILY);
-                        updateTemplateReview.exec(template);
-                        break;
-                    }
-                    template.setPeriod(Period.WEEKLY);
-                    updateTemplateReview.exec(template);
-                    break;
                 default:
                     break;
             }
@@ -481,7 +444,6 @@ public class CLI {
         clear();
         System.out.println("----- Template Details :: " + templateReview.getId() + " -----");
         System.out.println("Name: " + templateReview.getDisplayName());
-        System.out.println("Periodicity: " + templateReview.getPeriod());
         System.out.println("----- Questions -----");
         List<TemplateQuestion> templateQuestions = templateReview.getTemplateQuestions();
         for (int i = 0; i < templateQuestions.size(); i++) {
@@ -682,7 +644,6 @@ public class CLI {
     private void createNewTemplateReview() {
         TemplateReview newTemplateReview = null;
         String name = null;
-        Period period = null;
         List<TemplateQuestion> selectedTemplateQuestions = new LinkedList<>();
         // GetTemplateQuestions getTemplateQuestions = new
         // GetTemplateQuestions(CliModule.templateQuestionRepository);
@@ -696,21 +657,12 @@ public class CLI {
                 name = scan.nextLine().trim();
                 System.out.println();
             }
-            if (period == null) {
-                Period[] periods = { Period.DAILY, Period.WEEKLY };
-                Integer selectedOption = Menu.showOptions(scan, new String[] { "Daily", "Weekly" });
-                if (selectedOption == null) {
-                    scan.nextLine();
-                    return;
-                }
-                period = periods[selectedOption];
-                System.out.println();
-            }
+
             if (newTemplateReview == null) {
                 CreateTemplateReview createTemplateReview = new CreateTemplateReview(
                         CliModule.templateReviewRepository);
                 try {
-                    newTemplateReview = createTemplateReview.exec(name, period, selectedTemplateQuestions);
+                    newTemplateReview = createTemplateReview.exec(name, selectedTemplateQuestions);
                 } catch (Exception e) {
                     System.out.println("* Error: " + e.getMessage() + " *");
                     System.out.println("(Press 'Enter' to return)");
@@ -728,37 +680,6 @@ public class CLI {
                 return;
             }
 
-            // TODO turn this into a fork: select existing questions / create new question
-
-            // Integer selectedOption = -1;
-
-            // while (selectedOption != null) {
-            // clear();
-            // System.out.println("----- New Review Template :: Select Questions to Include
-            // -----");
-            // String[] questionNames = new String[allTemplateQuestions.size()];
-            // for (int i = 0; i < questionNames.length; i++) {
-            // TemplateQuestion nextQuestion = allTemplateQuestions.get(i);
-            // if (templateQuestions.contains(nextQuestion)) {
-            // questionNames[i] = nextQuestion.getDisplayName() + " (Included!)";
-            // } else {
-            // questionNames[i] = nextQuestion.getDisplayName();
-            // }
-            // }
-            // selectedOption = Menu.showOptions(scan, questionNames);
-            // if (selectedOption == null) {
-            // scan.nextLine();
-            // break;
-            // }
-            // scan.nextLine();
-            // templateQuestions.add(allTemplateQuestions.get(selectedOption));
-            // }
-
-            // if (selectedTemplateQuestions.isEmpty()) {
-            // scan.nextLine();
-            // return;
-            // }
-
         }
     };
 
@@ -766,7 +687,6 @@ public class CLI {
         clear();
         System.out.println("------ Review :: " + review.getDate() + " ------");
         System.out.println();
-        System.out.println("Periodicity: " + review.getPeriod().name());
         System.out.println("Well-being rate: " + review.getWellbeingRate());
         System.out.println("Productivity rate: " + review.getProductivityRate());
         System.out.println("Overall day rate: " + review.getDayRate());

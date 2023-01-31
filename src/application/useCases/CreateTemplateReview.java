@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import application.entities.TemplateQuestion;
 import application.entities.TemplateReview;
-import application.entities.TemplateReview.Period;
+
 import application.repositories.TemplateReviewRepository;
 
 public class CreateTemplateReview {
@@ -15,17 +15,14 @@ public class CreateTemplateReview {
         this.templateReviewRepository = templateReviewRepository;
     }
 
-    public TemplateReview exec(String name, Period period, List<TemplateQuestion> templateQuestionsList)
+    public TemplateReview exec(String name, List<TemplateQuestion> templateQuestionsList)
             throws Exception {
-        if (period == null) {
-            throw new Exception("A Template Review's periodicity can't be null.");
-        }
         if (templateQuestionsList == null) {
             throw new Exception("A Template Review's question list can't be null.");
         }
 
         String id = UUID.randomUUID().toString();
-        TemplateReview customTemplateReview = new TemplateReview(id, period, templateQuestionsList, name);
+        TemplateReview customTemplateReview = new TemplateReview(id, templateQuestionsList, name);
 
         this.templateReviewRepository.add(customTemplateReview);
 

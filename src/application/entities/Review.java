@@ -3,13 +3,10 @@ package application.entities;
 import java.time.LocalDate;
 import java.util.List;
 
-import application.entities.TemplateReview.Period;
-
 public class Review {
 
     private String authorId;
     private String id;
-    private Period period;
     private Integer dayRate;
     private Integer wellbeingRate;
     private Integer productivityRate;
@@ -17,10 +14,9 @@ public class Review {
     private LocalDate date;
     private List<Question> questions;
 
-    public Review(String authorId, String reviewId, Period period, LocalDate date, List<Question> questions) {
+    public Review(String authorId, String reviewId, LocalDate date, List<Question> questions) {
         this.authorId = authorId;
         this.id = reviewId;
-        this.period = period;
         this.date = date;
         this.questions = questions;
     }
@@ -31,14 +27,6 @@ public class Review {
 
     public String getAuthorId() {
         return authorId;
-    }
-
-    public Period getPeriod() {
-        return this.period;
-    }
-
-    public void setPeriod(Period period) {
-        this.period = period;
     }
 
     public Integer getDayRate() {

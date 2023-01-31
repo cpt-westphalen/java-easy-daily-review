@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 import application.entities.TemplateQuestion;
 import application.entities.TemplateReview;
-import application.entities.TemplateReview.Period;
+
 import application.repositories.TemplateReviewRepository;
 import config.Config;
 import utils.MakeTemplateQuestions;
@@ -53,13 +53,6 @@ public class TextDbTemplateReviewRepository implements TemplateReviewRepository 
     }
 
     @Override
-    public List<TemplateReview> listByPeriod(Period period) {
-        List<TemplateReview> templateReviewsOfPeriod = templateReviews.values().stream()
-                .filter(tr -> tr.getPeriod().equals(period)).collect(Collectors.toList());
-        return templateReviewsOfPeriod.size() > 0 ? templateReviewsOfPeriod : null;
-    }
-
-    @Override
     public List<TemplateReview> listAll() {
         return templateReviews.values().stream().collect(Collectors.toList());
     }
@@ -83,8 +76,6 @@ public class TextDbTemplateReviewRepository implements TemplateReviewRepository 
             writer.write("n " + templateReview.getDisplayName());
             writer.newLine();
             writer.write("i " + templateReview.getId());
-            writer.newLine();
-            writer.write(templateReview.getPeriod().name());
             writer.newLine();
             for (TemplateQuestion templateQuestion : templateReview.getTemplateQuestions()) {
                 writer.write("n " + templateQuestion.getDisplayName());
@@ -142,7 +133,6 @@ public class TextDbTemplateReviewRepository implements TemplateReviewRepository 
 
     private TemplateReview makeTemplateReviewFromFile(File file) {
         String id, name;
-        Period period = Period.DAILY; // default
 
         List<TemplateQuestion> questions = new LinkedList<TemplateQuestion>();
 
@@ -166,17 +156,11 @@ public class TextDbTemplateReviewRepository implements TemplateReviewRepository 
             } else {
                 id = UUID.randomUUID().toString();
             }
-            // check for periodicity
-            if (line.equalsIgnoreCase("daily")) {
-                period = Period.DAILY;
-            } else if (line.equalsIgnoreCase("weekly")) {
-                period = Period.WEEKLY;
-            }
 
             // create questions based on type / text from each line of the file
             questions = MakeTemplateQuestions.fromScannerNextLine(fileScanner);
 
-            TemplateReview template = new TemplateReview(id, period, questions, name);
+            TemplateReview template = new TemplateReview(id, questions, name);
 
             return template;
         } catch (Exception e) {

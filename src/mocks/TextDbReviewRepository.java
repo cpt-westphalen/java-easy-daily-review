@@ -21,7 +21,7 @@ import application.entities.Question;
 import application.entities.Review;
 import application.entities.TemplateQuestion;
 import application.entities.TemplateQuestion.Type;
-import application.entities.TemplateReview.Period;
+
 import application.repositories.ReviewRepository;
 
 import config.Config;
@@ -73,7 +73,6 @@ public class TextDbReviewRepository implements ReviewRepository {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath.toFile()))) {
             String line;
             String authorId = null, reviewId = null;
-            Period period = null;
             LocalDate date = null;
             List<Question> questions = new LinkedList<Question>();
             while ((line = reader.readLine()) != null) {
@@ -86,12 +85,6 @@ public class TextDbReviewRepository implements ReviewRepository {
                             break;
                         case "reviewid":
                             reviewId = value;
-                            break;
-                        case "period":
-                            if (value.equalsIgnoreCase("DAILY"))
-                                period = Period.DAILY;
-                            if (value.equalsIgnoreCase("WEEKLY"))
-                                period = Period.WEEKLY;
                             break;
                         case "date":
                             date = LocalDate.parse(value);
@@ -145,7 +138,7 @@ public class TextDbReviewRepository implements ReviewRepository {
                     }
                 }
             }
-            Review review = new Review(authorId, reviewId, period, date, questions);
+            Review review = new Review(authorId, reviewId, date, questions);
             Integer dayRate = review.getQuestionById(
                     "36276627-b507-41ff-b9f0-8bc7c9709986")
                     .getAnswer().getValueAsInteger();
@@ -180,13 +173,6 @@ public class TextDbReviewRepository implements ReviewRepository {
     }
 
     @Override
-    public List<Review> getManyByPeriod(Period period) {
-        List<Review> list = this.reviews.values().stream().filter(review -> review.getPeriod().equals(period))
-                .collect(Collectors.toList());
-        return list;
-    }
-
-    @Override
     public void add(Review review) {
         List<Review> reviewListFromAuthor = getManyByAuthorId(review.getAuthorId());
         Review lastReview = reviewListFromAuthor.get(reviewListFromAuthor.size() - 1);
@@ -211,8 +197,6 @@ public class TextDbReviewRepository implements ReviewRepository {
             writer.write("authorId: " + review.getAuthorId());
             writer.newLine();
             writer.write("reviewId: " + review.getId());
-            writer.newLine();
-            writer.write("period: " + review.getPeriod());
             writer.newLine();
             writer.write("date: " + review.getDate());
             writer.newLine();

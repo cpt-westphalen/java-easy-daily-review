@@ -36,8 +36,8 @@ public class App {
             }
         }
 
-        // TODO Clean up app from "weekly" review option. This is easy-DAILY-review.
         // TODO Fix overwriting review keeping old review in-memory
+        // TODO Create Auth as Use-Cases
         // TODO Delete Template Review
         // TODO View week rates: Highest, lowest, average
         // TODO Compare answers from different reviews

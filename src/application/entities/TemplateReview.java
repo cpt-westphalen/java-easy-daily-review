@@ -8,11 +8,6 @@ import application.entities.TemplateQuestion.Type;
 
 public class TemplateReview {
 
-    public static enum Period {
-        DAILY,
-        WEEKLY,
-    };
-
     public static TemplateQuestion wellbeingRateQuestion = new TemplateQuestion("1236d288-9b69-458e-8474-c58fcd35ad08",
             Type.NUMBER, "How would you rate your well-being today?", "Well-being Rating");
     public static TemplateQuestion productivityRateQuestion = new TemplateQuestion(
@@ -22,7 +17,6 @@ public class TemplateReview {
             Type.NUMBER, "How would you rate your day as a whole?", "Day Rating");
 
     private String id, name;
-    private Period period;
     private List<TemplateQuestion> templateQuestions;
 
     public static List<TemplateQuestion> getDefaultTemplateQuestions() {
@@ -33,9 +27,8 @@ public class TemplateReview {
         return defaultTemplateQuestions;
     }
 
-    public TemplateReview(String id, Period period, List<TemplateQuestion> templateQuestions, String name) {
+    public TemplateReview(String id, List<TemplateQuestion> templateQuestions, String name) {
         this.id = id == null ? UUID.randomUUID().toString() : id;
-        this.period = period;
         this.templateQuestions = templateQuestions;
         this.name = name != null ? name : "Unnamed Template (" + id + ")";
 
@@ -43,14 +36,6 @@ public class TemplateReview {
 
     public String getId() {
         return this.id;
-    }
-
-    public Period getPeriod() {
-        return this.period;
-    }
-
-    public void setPeriod(Period period) {
-        this.period = period;
     }
 
     public List<TemplateQuestion> getTemplateQuestions() {
@@ -84,13 +69,6 @@ public class TemplateReview {
 
     public void setDisplayName(String newName) {
         this.name = newName;
-    }
-
-    @Override
-    public String toString() {
-        return "TemplateReview [\n\tid=" + id + ", \n\tperiod=" + period + ", \n\ttemplateQuestions="
-                + templateQuestions
-                + "\n]";
     }
 
 }

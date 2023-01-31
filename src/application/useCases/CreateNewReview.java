@@ -5,7 +5,7 @@ import java.util.List;
 
 import application.entities.Question;
 import application.entities.Review;
-import application.entities.TemplateReview.Period;
+
 import application.repositories.ReviewRepository;
 
 public class CreateNewReview {
@@ -15,9 +15,9 @@ public class CreateNewReview {
                 this.reviewRepository = reviewRepository;
         }
 
-        public Review exec(String authorId, String reviewId, Period period, LocalDate date, List<Question> questions) {
+        public Review exec(String authorId, String reviewId, LocalDate date, List<Question> questions) {
                 // create the new review from the questions and answers
-                Review review = new Review(authorId, reviewId, period, date, questions);
+                Review review = new Review(authorId, reviewId, date, questions);
 
                 // set default rates by querying the question id
                 Integer dayRate = review.getQuestionById(
