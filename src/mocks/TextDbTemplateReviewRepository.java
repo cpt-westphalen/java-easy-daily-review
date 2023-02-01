@@ -169,4 +169,12 @@ public class TextDbTemplateReviewRepository implements TemplateReviewRepository 
         }
     }
 
+    @Override
+    public void remove(TemplateReview templateReview) {
+        templateReviews.remove(templateReview.getId());
+        String filename = templateReview.getId() + ".txt";
+        File file = Path.of(TEMPLATE_REVIEW_DB_PATH.toString(), filename).toFile();
+        file.delete();
+    }
+
 }

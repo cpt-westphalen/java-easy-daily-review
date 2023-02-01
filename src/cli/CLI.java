@@ -26,6 +26,7 @@ import application.useCases.AddQuestionToTemplateReview;
 import application.useCases.CreateNewReview;
 import application.useCases.CreateTemplateQuestion;
 import application.useCases.CreateTemplateReview;
+import application.useCases.DeleteTemplateReview;
 
 public class CLI {
 
@@ -141,7 +142,7 @@ public class CLI {
                 case 0:
                     // write new review
                     scan.nextLine();
-                    selectTemplateReview();
+                    selectTemplateForNewReview();
                     break;
 
                 case 1:
@@ -163,7 +164,7 @@ public class CLI {
         }
     }
 
-    private void selectTemplateReview() {
+    private void selectTemplateForNewReview() {
         clear();
         ListTemplateReviews listTemplateReviews = new ListTemplateReviews(CliModule.templateReviewRepository);
         List<TemplateReview> templateReviewsList = listTemplateReviews.exec();
@@ -345,7 +346,7 @@ public class CLI {
     private void settingsMenu() {
         clear();
         System.out.println("----- Settings -----");
-        String[] options = { "Customize Review Template", "Create new Review Template" };
+        String[] options = { "Customize Review Template", "Create new Review Template", "Delete Review Template" };
         Integer selectedOption = Menu.showOptions(scan, options);
         if (selectedOption == null) {
             scan.nextLine();
@@ -366,6 +367,11 @@ public class CLI {
                 // Create Template Review
                 scan.nextLine();
                 createNewTemplateReview();
+
+            case 2:
+                // Delete Template Review
+                scan.nextLine();
+                deleteReviewTemplateMenu();
             default:
                 break;
         }
@@ -680,6 +686,62 @@ public class CLI {
 
         }
     };
+
+    private void deleteReviewTemplateMenu() {
+        ListTemplateReviews listTemplateReviews = new ListTemplateReviews(CliModule.templateReviewRepository);
+        TemplateReview selectedTemplateReview = null;
+        while (true) {
+            List<TemplateReview> existingTemplateReviews = listTemplateReviews.exec();
+            clear();
+            System.out.println("----- Delete Template Review -----");
+            String[] templateDisplayNames = new String[existingTemplateReviews.size()];
+            for (int i = 0; i < templateDisplayNames.length; i++) {
+                TemplateReview tr = existingTemplateReviews.get(i);
+                templateDisplayNames[i] = tr.getDisplayName() + " - Questions: " + tr.getTemplateQuestions().size();
+            }
+            Integer selectedOption = Menu.showOptions(scan, templateDisplayNames);
+            scan.nextLine();
+            if (selectedOption == null)
+                return;
+            selectedTemplateReview = existingTemplateReviews.get(selectedOption);
+
+            while (true) {
+                clear();
+                System.out.println("----- Delete :: " + selectedTemplateReview.getId() + " -----");
+                String[] deleteOptions = { "View Template Details", "Delete Template" };
+                selectedOption = Menu.showOptions(scan, deleteOptions);
+                scan.nextLine();
+                if (selectedOption == null)
+                    break;
+                switch (selectedOption) {
+                    case 0:
+                        displayTemplateReviewDetails(selectedTemplateReview);
+                        break;
+                    case 1:
+                        System.out.println();
+                        System.out.println("Are you sure? ('y' / 'n')");
+                        if (!scan.nextLine().toLowerCase().startsWith("y")) {
+                            break;
+                        }
+                        DeleteTemplateReview deleteTemplateReview = new DeleteTemplateReview(
+                                CliModule.templateReviewRepository);
+                        try {
+                            deleteTemplateReview.exec(selectedTemplateReview);
+                            return;
+                        } catch (Exception e) {
+                            System.out.println("* Error: " + e.getMessage() + " *");
+                            System.out.println("(Press 'Enter' to return)");
+                            scan.nextLine();
+                            break;
+                        }
+
+                    default:
+                        break;
+                }
+            }
+
+        }
+    }
 
     private void printReview(Review review) {
         clear();

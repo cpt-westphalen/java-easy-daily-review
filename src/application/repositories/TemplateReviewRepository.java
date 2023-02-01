@@ -13,4 +13,6 @@ public interface TemplateReviewRepository {
     public void add(TemplateReview templateReview);
 
     public void update(TemplateReview templateReview);
+
+    public void remove(TemplateReview templateReview);
 }
