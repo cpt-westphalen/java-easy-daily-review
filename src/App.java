@@ -36,8 +36,5 @@ public class App {
             }
         }
 
-        // TODO View week rates: Highest, lowest, average
-        // TODO Compare answers from different reviews
-
     }
 }

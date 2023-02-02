@@ -363,7 +363,7 @@ public class CLI {
                     break;
                 case 1:
                     // TODO compare answers menu
-                    // compareAnswersMenu();
+                    compareAnswersMenu();
                     break;
 
                 default:
@@ -463,6 +463,61 @@ public class CLI {
             scan.nextLine();
             return;
         }
+    }
+
+    private void compareAnswersMenu() {
+        GetReviews getReviews = new GetReviews(CliModule.reviewRepository);
+        GetTemplateQuestions getTemplateQuestions = new GetTemplateQuestions(CliModule.templateQuestionRepository);
+        List<TemplateQuestion> textQuestions = getTemplateQuestions.exec().stream()
+                .filter(tq -> tq.getType().equals(Type.TEXT)).collect(Collectors.toList());
+        while (true) {
+            clear();
+            System.out.println("----- Compare Answers :: Select a question -----");
+            System.out.println();
+            TemplateQuestion selectedQuestion = selectTemplateQuestionFromList(textQuestions);
+            if (selectedQuestion == null)
+                return;
+            String questionId = selectedQuestion.getId();
+            List<Review> userReviewsWithQuestion = getReviews.withQuestion(questionId);
+            Review baseReview = selectReviewFromList(userReviewsWithQuestion);
+            userReviewsWithQuestion.remove(baseReview);
+            Review diffReview = selectReviewFromList(userReviewsWithQuestion);
+            compareAnswers(selectedQuestion, baseReview, diffReview);
+        }
+    }
+
+    private Review selectReviewFromList(List<Review> reviewsList) {
+        String[] options = new String[reviewsList.size()];
+        for (int i = 0; i < options.length; i++) {
+            Review review = reviewsList.get(i);
+            options[i] = review.getDate().toString();
+        }
+        clear();
+        System.out.println("----- Select a Review -----");
+        Integer selectedOption = Menu.showOptions(scan, options);
+        scan.nextLine();
+        if (selectedOption == null)
+            return null;
+        return reviewsList.get(selectedOption);
+
+    }
+
+    private void compareAnswers(TemplateQuestion templateQuestion, Review firstReview, Review secondReview) {
+        Answer firstAnswer = firstReview.getQuestionById(templateQuestion.getId()).getAnswer();
+        Answer secondAnswer = secondReview.getQuestionById(templateQuestion.getId()).getAnswer();
+        clear();
+        System.out.println("----- Compare Answers -----");
+        System.out.println();
+        System.out.println("Question: " + templateQuestion.getText());
+        System.out.println();
+        System.out.println(":: " + firstReview.getDate() + " --");
+        System.out.println("- Answer: " + firstAnswer.getValue());
+        System.out.println();
+        System.out.println(":: " + secondReview.getDate() + " --");
+        System.out.println("- Answer: " + secondAnswer.getValue());
+        System.out.println();
+        System.out.println("(Press 'Enter' to return)");
+        scan.nextLine();
     }
 
     private void settingsMenu() {
@@ -713,9 +768,9 @@ public class CLI {
     private TemplateQuestion selectTemplateQuestionFromList(List<TemplateQuestion> templateQuestions) {
         clear();
         while (true) {
-            System.out.println("----- Select Template Question to Add -----");
+            System.out.println("----- Select Template Question -----");
             if (templateQuestions.isEmpty()) {
-                System.out.println("* This template uses all available questions! *");
+                System.out.println("* No template questions available! *");
                 System.out.println("(Press 'Enter' to return)");
                 scan.nextLine();
                 return null;

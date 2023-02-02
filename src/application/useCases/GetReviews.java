@@ -30,6 +30,14 @@ public class GetReviews {
         return recentReviews;
     }
 
+    public List<Review> withQuestion(String questionId) {
+        String authorId = Auth.getLoggedUser().getId();
+        List<Review> allReviews = this.reviewRepository.getManyByAuthorId(authorId);
+        List<Review> reviewsWithSelectedQuestion = allReviews.stream()
+                .filter(review -> review.getQuestionById(questionId) != null).collect(Collectors.toList());
+        return reviewsWithSelectedQuestion;
+    }
+
     public boolean hasReviewedToday() {
         String authorId = Auth.getLoggedUser().getId();
         List<Review> reviewsList = reviewRepository.getManyByAuthorId(authorId);
