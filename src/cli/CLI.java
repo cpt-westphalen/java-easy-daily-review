@@ -362,7 +362,7 @@ public class CLI {
                     weekRatesMenu();
                     break;
                 case 1:
-                    // TODO compare answers menu
+                    // compare answers menu
                     compareAnswersMenu();
                     break;
 
