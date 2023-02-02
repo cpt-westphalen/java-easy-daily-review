@@ -1,0 +1,24 @@
+n Default Daily Template
+i 91bcc21d-691e-4fb7-bf34-4b4e49558745
+DAILY
+n Productivity: Tasks completed today
+i 637fcc52-0060-4c37-b410-68b01c68e3be
+& What task(s) have you completed today and would like to highlight?
+n Well-being: todays joyful moment
+i aedd89f7-2b6e-406b-8132-0da5c5bb8ee5
+& In relation to your well-being, what was your best moment today? Have you done or experienced something joyful/fulfilling?
+n Productivity: Attention, focus, priorities
+i ae3df97b-64cb-4d76-a859-d6bca531fa07
+& How would you describe your productivity today? How was your attention, focus, prioritization?
+n Productivity: Compared to yesterday
+i 522b5c97-d590-4f01-842b-9f4d0d7c3520
+! Compared to yesterday (or to the last working day), have you been more productive?
+n Emotional Int.: Reaction to bad happening
+i 5c1fa51f-ddc5-464d-abee-ba99b96980b6
+& Have anything bad happened today? If so, how would you review your reaction to it?
+n Extra comment
+i 67df1ea8-1108-4b08-a6e6-048db1a9f71f
+& Would you like to comment something else about the day?
+n Well-being: Daily journal
+i 77613c8f-53c0-4455-8e87-d7a880fc2736
+! Have you written on your journal?
