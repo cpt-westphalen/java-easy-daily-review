@@ -6,7 +6,7 @@ This app is a simple Java project for writing easy daily productivity and well-b
 
 This is a final project for the Java Developer course of [+PraTI](https://maisprati.alfamidia.com.br/).
 
-For data persistence, I decided to mock the database with text files, so I could learn how to read/write to files and move throw folders in Java. The project requirements did not include data persistency.
+For data persistence, I decided to mock the database with text files, so I could learn how to read/write to files and move through folders in Java. The project requirements did not include data persistency.
 
 ### Folder Structure / Software Layers
 
