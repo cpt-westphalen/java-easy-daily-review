@@ -28,6 +28,7 @@ import application.useCases.CreateNewReview;
 import application.useCases.CreateTemplateQuestion;
 import application.useCases.CreateTemplateReview;
 import application.useCases.DeleteTemplateReview;
+import application.useCases.GetRatesMaxMin;
 import application.useCases.GetRatesAverages;
 
 public class CLI {
@@ -372,7 +373,7 @@ public class CLI {
     }
 
     private void weekRatesMenu() {
-        String[] options = { "Averages", "Max and Minimum Rates" };
+        String[] options = { "Averages", "Highs and Lows" };
         while (true) {
             clear();
             System.out.println("----- Week Rates -----");
@@ -386,8 +387,8 @@ public class CLI {
                     showWeekAverages();
                     break;
                 case 1:
-                    // TODO Max and Minimum Rates
-                    // showWeekMaxMinRates();
+                    // Max and Minimum Rates
+                    showWeekMaxMinRates();
                     break;
 
                 default:
@@ -396,7 +397,7 @@ public class CLI {
         }
     }
 
-    public void showWeekAverages() {
+    private void showWeekAverages() {
         try {
             clear();
             GetReviews getReviews = new GetReviews(CliModule.reviewRepository);
@@ -407,11 +408,12 @@ public class CLI {
             Integer productivityRatesAvg = rates.getProductivityRate();
             Integer wellbeingRatesAvg = rates.getWellbeingRate();
 
-            System.out.println("----- Week Averages -----");
+            System.out.println("----- Week's Averages -----");
+            System.out.println();
             System.out.println("Productivity Rates: " + productivityRatesAvg);
             System.out.println("Well-being Rates: " + wellbeingRatesAvg);
             System.out.println("Day Rates: " + dayRatesAvg);
-            System.out.println("-------------------------");
+            System.out.println("---------------------------");
             System.out.println("(Press 'Enter' to return)");
             scan.nextLine();
             return;
@@ -423,6 +425,44 @@ public class CLI {
             return;
         }
 
+    }
+
+    private void showWeekMaxMinRates() {
+        try {
+            clear();
+            GetReviews getReviews = new GetReviews(CliModule.reviewRepository);
+            List<Review> recentReviews = getReviews.listRecentFromLoggedUser(7);
+            GetRatesMaxMin getMaxMinRates = new GetRatesMaxMin(recentReviews);
+
+            Rates maxRates = getMaxMinRates.maxRates();
+            Rates minRates = getMaxMinRates.minRates();
+
+            System.out.println("----- Week's Highs and Lows -----");
+            System.out.println();
+            System.out.println("Day Rate ------------------------");
+            System.out.println("- Max: " + maxRates.getDayRate());
+            System.out.println("- Min: " + minRates.getDayRate());
+            System.out.println("---------------------------------");
+            System.out.println();
+            System.out.println("Well-being Rate -----------------");
+            System.out.println("- Max: " + maxRates.getWellbeingRate());
+            System.out.println("- Min: " + minRates.getWellbeingRate());
+            System.out.println("---------------------------------");
+            System.out.println();
+            System.out.println("Productivity Rate ---------------");
+            System.out.println("- Max: " + maxRates.getProductivityRate());
+            System.out.println("- Min: " + minRates.getProductivityRate());
+            System.out.println("---------------------------------");
+            System.out.println();
+            System.out.println("(Press 'Enter' to return)");
+            scan.nextLine();
+            return;
+        } catch (Exception e) {
+            System.out.println("* Error: " + e.getMessage() + " *");
+            System.out.println("(Press 'Enter' to return)");
+            scan.nextLine();
+            return;
+        }
     }
 
     private void settingsMenu() {
@@ -449,11 +489,12 @@ public class CLI {
                 // Create Template Review
                 scan.nextLine();
                 createNewTemplateReview();
-
+                break;
             case 2:
                 // Delete Template Review
                 scan.nextLine();
                 deleteReviewTemplateMenu();
+                break;
             default:
                 break;
         }
