@@ -7,9 +7,7 @@ public class Review {
 
     private String authorId;
     private String id;
-    private Integer dayRate;
-    private Integer wellbeingRate;
-    private Integer productivityRate;
+    private Rates rates;
 
     private LocalDate date;
     private List<Question> questions;
@@ -19,6 +17,20 @@ public class Review {
         this.id = reviewId;
         this.date = date;
         this.questions = questions;
+
+        Integer dayRate = this.getQuestionById(
+                "36276627-b507-41ff-b9f0-8bc7c9709986")
+                .getAnswer().getValueAsInteger();
+        Integer wellbeingRate = this
+                .getQuestionById(
+                        "1236d288-9b69-458e-8474-c58fcd35ad08")
+                .getAnswer().getValueAsInteger();
+        Integer productivityRate = this
+                .getQuestionById(
+                        "86f8f91a-17cb-4058-9dc2-5d439b3daa58")
+                .getAnswer().getValueAsInteger();
+
+        this.rates = new Rates(productivityRate, wellbeingRate, dayRate);
     }
 
     public String getId() {
@@ -30,27 +42,27 @@ public class Review {
     }
 
     public Integer getDayRate() {
-        return dayRate;
+        return rates.getDayRate();
     }
 
     public void setDayRate(Integer dayRate) {
-        this.dayRate = dayRate;
+        this.rates.setDayRate(dayRate);
     }
 
     public Integer getWellbeingRate() {
-        return wellbeingRate;
+        return rates.getWellbeingRate();
     }
 
     public void setWellbeingRate(Integer wellbeingRate) {
-        this.wellbeingRate = wellbeingRate;
+        this.rates.setWellbeingRate(wellbeingRate);
     }
 
     public Integer getProductivityRate() {
-        return productivityRate;
+        return rates.getProductivityRate();
     }
 
     public void setProductivityRate(Integer productivityRate) {
-        this.productivityRate = productivityRate;
+        this.rates.setProductivityRate(productivityRate);
     }
 
     public LocalDate getDate() {

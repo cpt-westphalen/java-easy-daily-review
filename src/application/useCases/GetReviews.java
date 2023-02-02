@@ -20,11 +20,12 @@ public class GetReviews {
         return reviewRepository.getManyByAuthorId(authorId);
     }
 
-    public List<Review> listRecentFromLoggedUser() throws Exception {
+    public List<Review> listRecentFromLoggedUser(int minusDays) throws Exception {
         String authorId = Auth.getLoggedUser().getId();
         List<Review> allReviews = reviewRepository.getManyByAuthorId(authorId);
         List<Review> recentReviews = allReviews.stream()
-                .filter(review -> review.getDate().isAfter(LocalDate.now().minusDays(10))).collect(Collectors.toList());
+                .filter(review -> review.getDate().isAfter(LocalDate.now().minusDays(minusDays)))
+                .collect(Collectors.toList());
         recentReviews.sort((a, b) -> a.getDate().isAfter(b.getDate()) ? 1 : -1);
         return recentReviews;
     }

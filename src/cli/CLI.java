@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import application.Auth;
 import application.entities.Answer;
 import application.entities.Question;
+import application.entities.Rates;
 import application.entities.Review;
 import application.entities.TemplateQuestion;
 import application.entities.TemplateReview;
@@ -27,6 +28,7 @@ import application.useCases.CreateNewReview;
 import application.useCases.CreateTemplateQuestion;
 import application.useCases.CreateTemplateReview;
 import application.useCases.DeleteTemplateReview;
+import application.useCases.GetRatesAverages;
 
 public class CLI {
 
@@ -125,35 +127,36 @@ public class CLI {
         while (true) {
             String[] options = new String[] {
                     getReviews.hasReviewedToday() ? "Overwrite today's review" : "Write today's review",
-                    "Check previous reviews", "Settings" };
+                    "Check previous reviews", "Results and Comparing", "Settings" };
             clear();
             LocalDate today = LocalDate.now();
             String name = Auth.getLoggedUser().getName();
             System.out.println("----- " + name + " :: " + today + " -----");
 
             Integer selectedOption = Menu.showOptions(scan, options);
+            scan.nextLine();
 
-            if (selectedOption == null) {
-                scan.nextLine();
+            if (selectedOption == null)
                 return;
-            }
 
             switch (selectedOption) {
                 case 0:
                     // write new review
-                    scan.nextLine();
                     selectTemplateForNewReview();
                     break;
 
                 case 1:
                     // check previous reviews
-                    scan.nextLine();
                     previousReviewsMenu();
                     break;
 
                 case 2:
+                    // check results and compare answers
+                    resultsMenu();
+                    break;
+
+                case 3:
                     // show settings
-                    scan.nextLine();
                     clear();
                     settingsMenu();
                     break;
@@ -250,7 +253,7 @@ public class CLI {
             System.out.println("----- User Reviews -----");
 
             try {
-                userReviews = getReviews.listRecentFromLoggedUser();
+                userReviews = getReviews.listRecentFromLoggedUser(10);
 
                 if (userReviews.size() == 0) {
                     System.out.println("* No Reviews Yet! *");
@@ -341,6 +344,85 @@ public class CLI {
 
             }
         }
+    }
+
+    private void resultsMenu() {
+        String[] options = { "Week Rates", "Compare Answers" };
+        while (true) {
+            clear();
+            System.out.println("----- Results and Comparing -----");
+            Integer selectedOption = Menu.showOptions(scan, options);
+            scan.nextLine();
+            if (selectedOption == null)
+                return;
+            switch (selectedOption) {
+                case 0:
+                    // week rates menu
+                    weekRatesMenu();
+                    break;
+                case 1:
+                    // TODO compare answers menu
+                    // compareAnswersMenu();
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void weekRatesMenu() {
+        String[] options = { "Averages", "Max and Minimum Rates" };
+        while (true) {
+            clear();
+            System.out.println("----- Week Rates -----");
+            Integer selectedOption = Menu.showOptions(scan, options);
+            scan.nextLine();
+            if (selectedOption == null)
+                return;
+            switch (selectedOption) {
+                case 0:
+                    // Average Rates
+                    showWeekAverages();
+                    break;
+                case 1:
+                    // TODO Max and Minimum Rates
+                    // showWeekMaxMinRates();
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
+    public void showWeekAverages() {
+        try {
+            clear();
+            GetReviews getReviews = new GetReviews(CliModule.reviewRepository);
+            List<Review> reviewsList = getReviews.listRecentFromLoggedUser(7);
+            GetRatesAverages getRatesAverages = new GetRatesAverages(reviewsList);
+            Rates rates = getRatesAverages.exec();
+            Integer dayRatesAvg = rates.getDayRate();
+            Integer productivityRatesAvg = rates.getProductivityRate();
+            Integer wellbeingRatesAvg = rates.getWellbeingRate();
+
+            System.out.println("----- Week Averages -----");
+            System.out.println("Productivity Rates: " + productivityRatesAvg);
+            System.out.println("Well-being Rates: " + wellbeingRatesAvg);
+            System.out.println("Day Rates: " + dayRatesAvg);
+            System.out.println("-------------------------");
+            System.out.println("(Press 'Enter' to return)");
+            scan.nextLine();
+            return;
+
+        } catch (Exception e) {
+            System.out.println("* Error: " + e.getMessage() + " *");
+            System.out.println("(Press 'Enter' to return)");
+            scan.nextLine();
+            return;
+        }
+
     }
 
     private void settingsMenu() {
